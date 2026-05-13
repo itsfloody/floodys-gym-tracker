@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>Floody's Gym Tracker</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root {
+  color-scheme: dark;
+  --black: #0a0a0a; --card: #1c1c1c; --border: #2a2a2a;
+  --red: #e63329; --red-dim: rgba(230,51,41,0.12);
+  --white: #f0ede8; --muted: #888; --tag-bg: #252525;
+  --green: #2ecc71; --green-dim: rgba(46,204,113,0.12);
+  --amber: #f39c12; --amber-dim: rgba(243,156,18,0.12);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+@keyframes fadeDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+
+/* Pulsing animation for next set */
+@keyframes pulse-next {
+  0%   { border-color: var(--red); box-shadow: 0 0 0 0 rgba(230,51,41,0.5); }
+  70%  { border-color: var(--red); box-shadow: 0 0 0 6px rgba(230,51,41,0); }
+  100% { border-color: var(--red); box-shadow: 0 0 0 0 rgba(230,51,41,0); }
+}
+
+body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; padding:32px 16px 80px; }
+
+header { text-align:center; margin-bottom:48px; animation:fadeDown 0.6s ease both; }
+.eyebrow { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--red); font-weight:600; margin-bottom:10px; }
+h1 { font-family:'Bebas Neue',sans-serif; font-size:clamp(52px,12vw,96px); line-height:0.9; letter-spacing:2px; }
+h1 span { color:var(--red); }
+.subtitle { margin-top:14px; color:var(--muted); font-size:13px; letter-spacing:1px; }
+
+/* Spotify section */
+.spotify-section {
+  margin-bottom: 24px;
+  background: #141414;
+  border: 1px solid #1DB954;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.spotify-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(29, 185, 84, 0.2);
+}
+
+.spotify-header .sp-logo {
+  color: #1DB954;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.spotify-header .sp-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.sp-info-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.spotify-nowplaying {
+  margin-bottom: 12px;
+}
+
+#trackName {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#artistName {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spotify-section button {
+  background: #1DB954;
+  color: #000;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s ease;
+}
+
+.spotify-section button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: #1ed760;
+}
+
+.spotify-section button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#spotifyLogin {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.spotify-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.spotify-buttons button {
+  flex: 1;
+  font-size: 16px;
+  padding: 8px 10px;
+}
+.spotify-link-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+
+  padding: 10px 14px;
+  border-radius: 10px;
+
+  background:
+    linear-gradient(135deg, #1DB954 0%, #1ed760 100%);
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  color: #000;
+  text-decoration: none;
+
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+
+  box-shadow:
+    0 4px 14px rgba(29,185,84,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.25);
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    filter 0.18s ease;
+
+  position: relative;
+  overflow: hidden;
+}
+
+.spotify-link-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      120deg,
+      transparent 0%,
+      rgba(255,255,255,0.18) 50%,
+      transparent 100%
+    );
+
+  transform: translateX(-120%);
+  transition: transform 0.5s ease;
+}
+
+.spotify-link-btn:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 8px 20px rgba(29,185,84,0.35),
+    inset 0 1px 0 rgba(255,255,255,0.25);
+
+  filter: brightness(1.03);
+}
+
+.spotify-link-btn:hover::before {
+  transform: translateX(120%);
+}
+
+.spotify-link-btn:active {
+  transform: translateY(0);
+}
+
+.spotify-link-btn .playlist-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.spotify-link-btn .playlist-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.05;
+}
+
+.spotify-link-btn .playlist-title {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.spotify-link-btn .playlist-subtitle {
+  font-size: 9px;
+  font-weight: 600;
+  opacity: 0.65;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+/* Tabs */
+.tabs { display:flex; gap:6px; margin-bottom:20px; overflow-x:auto; scrollbar-width:none; }
+.tabs::-webkit-scrollbar { display:none; }
+.tab { flex-shrink:0; padding:10px 14px; background:var(--card); border:1px solid var(--border); cursor:pointer; border-radius:6px; font-size:14px; color:var(--muted); transition:all 0.2s; display:flex; flex-direction:column; align-items:center; gap:4px; }
+.tab.active { background:var(--red); border-color:var(--red); color:#fff; }
+.tab-name { font-family:'Bebas Neue',sans-serif; font-weight:500; letter-spacing:1px; }
+.tab-subtitle { font-size:10px; color:var(--muted); transition:color 0.2s; }
+.tab.active .tab-subtitle { color:rgba(255,255,255,0.7); }
+.day { display:none; } .day.active { display:block; }
+
+/* Exercise card */
+.exercise { background:var(--card); border:1px solid var(--border); padding:14px; margin-bottom:12px; border-radius:10px; }
+.exercise-header { display:flex; align-items:center; gap:12px; cursor:pointer; user-select:none; -webkit-user-select:none; justify-content:space-between; }
+.exercise-header:hover { opacity:0.9; }
+.ex-header-left { display:flex; align-items:center; gap:12px; flex:1; min-width:0; }
+
+.ex-thumbnail { width:48px; height:48px; border-radius:8px; flex-shrink:0; object-fit:contain; object-position:center; border:1px solid var(--border, #ff0000);  filter:invert(1); padding:2px; }
+.ex-info { flex:1; min-width:0; }
+.ex-name { font-weight:600; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ex-meta { font-size:12px; color:var(--muted); margin-top:2px; }
+.exercise-toggle { color:var(--red); font-size:12px; flex-shrink:0; transition:all 0.2s; width:20px; text-align:center; }
+.exercise-toggle.expanded { color:var(--red); }
+.exercise-content { display:none; margin-top:12px; }
+.exercise-content.expanded { display:block; }
+
+.reps-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:13px; color:var(--muted); }
+.reps { width:72px; background:transparent; border:none; border-bottom:1px solid #444; color:var(--white); text-align:center; font-size:13px; padding:2px 4px; }
+
+.video-toggle { display:inline-flex; align-items:center; gap:6px; margin:8px 0 4px; background:#1a1a1a; border:1px solid #333; border-radius:6px; padding:5px 10px; cursor:pointer; font-size:11px; color:#cc0000; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+.video-toggle:hover { border-color:#cc0000; background:rgba(204,0,0,0.1); }
+.video-wrap { display:none; margin:6px 0 8px; border-radius:8px; overflow:hidden; position:relative; padding-bottom:56.25%; height:0; }
+.video-wrap.open { display:block; }
+.video-wrap iframe { position:absolute; top:0; left:0; width:100%; height:100%; border:none; border-radius:8px; }
+
+/* Weight inputs */
+.sets { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+.sets input {
+  width:64px; text-align:center; background:#252525;
+  border:2px solid #333; color:var(--white); padding:5px 4px;
+  font-weight:600; font-family:'DM Sans',sans-serif; border-radius:6px;
+  transition:border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.sets input::placeholder { color:#555; font-weight:400; }
+.sets input.has-value { border-color:var(--green); background:var(--green-dim); color:var(--green); }
+.sets input.is-pb      { border-color:var(--amber); background:var(--amber-dim); color:var(--amber); }
+.sets input.is-next    { animation:pulse-next 1.4s ease infinite; background:var(--red-dim); }
+
+.set-entry { display:flex; flex-direction:column; align-items:center; gap:3px; }
+.set-label { font-size:9px; color:var(--muted); text-align:center; line-height:1.4; }
+.pb-badge  { font-size:9px; color:var(--amber); font-weight:700; height:13px; }
+
+/* Timer + clear button */
+.timer {
+  margin-top:10px; display:flex; align-items:center; gap:6px;
+  font-size:12px; border:1px solid #333; padding:8px; border-radius:6px;
+  transition:border-color 0.3s; flex-wrap:wrap;
+}
+.timer .time { font-weight:700; min-width:40px; font-size:14px; }
+.timer button {
+  background:#252525; border:1px solid #333; color:white;
+  padding:4px 10px; cursor:pointer; border-radius:4px; font-size:12px;
+  font-family:'DM Sans',sans-serif; transition:all 0.2s; white-space:nowrap;
+}
+.timer button:hover { border-color:#555; }
+.timer button.reset { background:var(--red); border-color:var(--red); color:var(--white); font-weight:600; }
+.timer button.clear-weights {
+  background:var(--green); border-color:var(--green); color:#000;
+  font-weight:700; margin-left:auto;
+}
+.timer button.clear-weights:hover { background:#27ae60; border-color:#27ae60; }
+.timer .rest-label { color:var(--white); font-size:11px; font-weight:600; letter-spacing:0.5px; text-transform:uppercase; }
+.timer input[type=number] { width:44px; background:#111; border:1px solid #333; color:white; text-align:center; border-radius:4px; padding:3px; font-size:12px; }
+
+/* RPE */
+.rpe-wrap { margin-top:12px; background:#141414; border:1px solid var(--border); border-radius:8px; padding:10px 12px; }
+.rpe-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.rpe-label { font-size:11px; letter-spacing:0.5px; text-transform:uppercase; color:var(--muted); font-weight:600; }
+.rpe-value { font-family:'Bebas Neue',sans-serif; font-size:22px; line-height:1; color:var(--white); min-width:60px; text-align:right; }
+.rpe-desc  { font-size:10px; color:var(--muted); margin-top:1px; text-align:right; }
+.rpe-slider { -webkit-appearance:none; appearance:none; width:100%; height:6px; border-radius:3px; outline:none; cursor:pointer; margin-top:4px; }
+.rpe-slider::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:22px; height:22px; border-radius:50%; background:var(--white); border:2px solid var(--border); cursor:pointer; transition:border-color 0.2s; }
+.rpe-slider::-webkit-slider-thumb:hover { border-color:var(--red); }
+.rpe-slider::-moz-range-thumb { width:22px; height:22px; border-radius:50%; background:var(--white); border:2px solid var(--border); cursor:pointer; }
+
+/* Chart */
+.chart { margin-top:10px; background:#111; border:1px solid #333; display:none; border-radius:6px; width:100%; max-width:300px; }
+.toggle-chart { margin-top:6px; font-size:11px; background:var(--card); border:1px solid var(--border); color:var(--white); padding:6px 12px; cursor:pointer; font-weight:500; border-radius:4px; font-family:'DM Sans',sans-serif; transition:all 0.2s ease; }
+.toggle-chart:hover { background:var(--tag-bg); border-color:var(--red); }
+
+/* Notes & Progression */
+.notes-box { margin-top:24px; background:var(--red-dim); border:1px solid rgba(230,51,41,0.2); border-radius:12px; padding:16px 18px; }
+.notes-box h4 { font-family:'Bebas Neue',sans-serif; font-size:16px; letter-spacing:1px; color:var(--red); margin-bottom:8px; }
+.notes-box li { font-size:12.5px; color:#c0bcb5; line-height:1.7; }
+.notes-box ul { padding-left:16px; }
+.progression { margin-top:28px; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px 18px; }
+.progression h3 { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:1px; margin-bottom:12px; color:var(--white); }
+.prog-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.prog-item { border-left:2px solid var(--red); padding-left:12px; }
+.prog-item h5 { font-size:12px; font-weight:600; color:var(--white); margin-bottom:3px; }
+.prog-item p { font-size:11px; color:var(--muted); line-height:1.5; }
+
+/* Screenshot — fixed bottom */
+.screenshot-bar-bottom { position:fixed; bottom:20px; right:20px; z-index:1000; }
+@media(max-width:768px) { .screenshot-bar-bottom { left:20px; right:20px; display:flex; justify-content:center; } }
+.screenshot-btn { display:inline-flex; align-items:center; gap:7px; background:linear-gradient(135deg,#1a1a1a 0%,#222 100%); border:1px solid #3a3a3a; border-radius:8px; padding:9px 16px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; color:var(--white); letter-spacing:0.3px; box-shadow:0 2px 12px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.04); transition:all 0.18s ease; white-space:nowrap; }
+.screenshot-btn:hover { background:linear-gradient(135deg,#222 0%,#2a2a2a 100%); border-color:#555; transform:translateY(-1px); }
+.screenshot-btn:active { transform:translateY(0); }
+.screenshot-btn svg { flex-shrink:0; opacity:0.85; }
+.screenshot-btn .btn-label { line-height:1; }
+.screenshot-btn .btn-sub { display:block; font-size:9px; font-weight:400; color:var(--muted); letter-spacing:0.5px; margin-top:2px; text-transform:uppercase; }
+.screenshot-btn.loading { opacity:0.5; pointer-events:none; }
+
+.footer-attribution { text-align:center; font-size:10px; color:var(--muted); margin-top:40px; padding-top:20px; border-top:1px solid var(--border); line-height:1.6; }
+.footer-attribution a { color:var(--muted); text-decoration:underline; }
+.footer-attribution a:hover { color:var(--white); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Fitness Journey</div>
+  <h1>Floody's <span>Gym</span> Tracker</h1>
+  <p class="subtitle">Strength. Consistency. Progress</p>
+</header>
+
+<div class="spotify-section">
+  <div class="spotify-header">
+    <div class="sp-logo">🎵</div>
+    <div class="sp-info">
+      <div class="sp-info-label">Now Playing</div>
+      <div id="trackName">No track playing</div>
+      <div id="artistName">Connect Spotify to begin</div>
+    </div>
+  </div>
+
+  <button id="spotifyLogin">Connect Spotify</button>
+
+  <div class="spotify-buttons">
+    <button id="playTrack">▶</button>
+    <button id="pauseTrack">⏸</button>
+    <button id="nextTrack">⏭</button>
+    <a
+      class="spotify-link-btn"
+      href="spotify:playlist:37i9dQZF1DX70RN3TfWWJh"
+      target="_blank"
+      rel="noopener"
+      onclick="setTimeout(() => {
+        window.open('https://open.spotify.com/playlist/37i9dQZF1DX70RN3TfWWJh', '_blank');
+        }, 500)"
+>
+      <span class="playlist-icon">🏋</span>
+      <span class="playlist-text">
+        <span class="playlist-title">Workout Playlist</span>
+        <span class="playlist-subtitle">on Spotify</span>
+      </span>
+    </a>
+  </div>
+</div>
+
+<div class="tabs" id="tabs"></div>
+<div id="app"></div>
+
+<div class="screenshot-bar-bottom">
+  <button class="screenshot-btn" id="screenshotBtn">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    <span><span class="btn-label">Save Screenshot</span><span class="btn-sub">Track / Share your progress</span></span>
+  </button>
+</div>
+
+<footer class="footer-attribution">
+  Exercise images from <a href="https://commons.wikimedia.org" target="_blank" rel="noopener">Wikimedia Commons</a>
+</footer>
+
+<script>
+// ─── RPE ───────────────────────────────────────────────────────────────────
+const RPE_DESCS = { 1:"Easy", 2:"Moderate", 3:"Hard", 4:"Very Hard", 5:"Max Effort" };
+function rpeColor(v) {
+  if(v<=1) return "#2ecc71"; if(v<=2) return "#f1c40f";
+  if(v<=3) return "#f39c12"; if(v<=4) return "#e67e22";
+  return "#e63329";
+}
+
+// ─── Thumbnails ────────────────────────────────────────────────────────────
+function getExerciseThumbnail(id) {
+  const WM = "https://upload.wikimedia.org/wikipedia/commons/thumb";
+  const thumbs = {
+    incline:     `${WM}/b/b8/Incline_dumbbell_press_1.svg/60px-Incline_dumbbell_press_1.svg.png`,
+    bench:       `${WM}/2/23/Barbell_neck_press_1.svg/60px-Barbell_neck_press_1.svg.png`,
+    flye:        `${WM}/c/c2/Incline_dumbbell_flys_2.svg/60px-Incline_dumbbell_flys_2.svg.png`,
+    lateral:     `${WM}/a/aa/Lateral_dumbbell_raises_1.svg/60px-Lateral_dumbbell_raises_1.svg.png`,
+    ohp:         `${WM}/e/e5/Dumbbell_shoulder_press_2.svg/60px-Dumbbell_shoulder_press_2.svg.png`,
+    lat:         `${WM}/f/f5/Wide_grip_lat_pull_down_2.svg/60px-Wide_grip_lat_pull_down_2.svg.png`,
+    row:         `${WM}/c/c5/Rear_deltoid_row_dumbbell_2.svg/60px-Rear_deltoid_row_dumbbell_2.svg.png`,
+    cableRow:    `${WM}/8/84/Seated_cable_rows_1.svg/60px-Seated_cable_rows_1.svg.png`,
+    preacher:    `${WM}/3/36/Preacher_curl_with_barbell_2.svg/60px-Preacher_curl_with_barbell_2.svg.png`,
+    hammer:      `${WM}/0/06/Bicep_hammer_curl_with_dumbbell_1.svg/60px-Bicep_hammer_curl_with_dumbbell_1.svg.png`,
+    cgbench:     `${WM}/3/34/Close_grip_barbell_bench_press_1.svg/60px-Close_grip_barbell_bench_press_1.svg.png`,
+    flye2:       `${WM}/c/c2/Incline_dumbbell_flys_2.svg/60px-Incline_dumbbell_flys_2.svg.png`,
+    pushdown:    `${WM}/1/13/Triceps_pushdown_with_cable_1.svg/60px-Triceps_pushdown_with_cable_1.svg.png`,
+    kickback:   `${WM}/b/ba/Triceps_kickback_with_dumbbell_2.svg/60px-Triceps_kickback_with_dumbbell_2.svg.png`,
+    lateral2:    `${WM}/a/aa/Lateral_dumbbell_raises_1.svg/60px-Lateral_dumbbell_raises_1.svg.png`,
+    upright:     `${WM}/2/2e/Upright_barbell_rows_1.svg/60px-Upright_barbell_rows_1.svg.png`,
+    facepull:    `${WM}/8/84/Seated_cable_rows_1.svg/60px-Seated_cable_rows_1.svg.png`,
+    ezcurl:      `${WM}/c/c0/Close_grip_ez_bar_curl_with_barbell_2.svg/60px-Close_grip_ez_bar_curl_with_barbell_2.svg.png`,
+    cablecurl:   `${WM}/c/c3/Lying_bicep_cable_curl_2.svg/60px-Lying_bicep_cable_curl_2.svg.png`,
+    shrug:       `${WM}/4/4e/Cable_shoulder_shrugs_2.svg/60px-Cable_shoulder_shrugs_2.svg.png`,
+    // Leg day
+    gobsquat:    `${WM}/9/9e/Dumbbell_goblet_squat_1.svg/60px-Dumbbell_goblet_squat_1.svg.png`,
+    rdl:         `${WM}/4/41/Dumbbell_romanian_deadlift_1.svg/60px-Dumbbell_romanian_deadlift_1.svg.png`,
+    bulgarian:   `${WM}/7/71/Dumbbell_split_squat_1.svg/60px-Dumbbell_split_squat_1.svg.png`,
+    hipthrust:   `${WM}/a/a4/Barbell_hip_thrust_1.svg/60px-Barbell_hip_thrust_1.svg.png`,
+  };
+  return thumbs[id] || "";
+}
+
+// ─── Exercise data ─────────────────────────────────────────────────────────
+const DAYS = [
+  { name:"Day1 - Push", subtitle:"Chest & Shoulders",
+    notes:["Bench press is your strength anchor — aim to add weight or reps every session","Dumbbell flyes: wide arc down for a full chest stretch, don't go too heavy — it's about range of motion, not load","Lateral raises: keep them strict with a slight forward lean, no swinging"],
+    exercises:[
+      { id:"incline",  name:"Dumbbell Incline Press",   sets:3, reps:"10–12", yt:"hChjZQhX1Ls" },
+      { id:"bench",    name:"Barbell Bench Press",      sets:4, reps:"6–8",   yt:"rT7DgCr-3pg" },
+      { id:"flye",     name:"Dumbbell Flat Bench Flye", sets:3, reps:"12–15", yt:"U5uW6jaOiLg" },
+      { id:"lateral",  name:"Dumbbell Lateral Raise",   sets:3, reps:"12–15", yt:"3VcKaXpzqRo" },
+      { id:"ohp",      name:"Dumbbell Overhead Press",  sets:3, reps:"10–12", yt:"C0We_bEyxlM" },
+    ]},
+  { name:"Day2 - Pull", subtitle:"Back & Bis",
+    notes:["Single-arm row: brace your free hand on the bench, let your wrist angle float naturally — much kinder on the elbow than a barbell row","Cable seated row: pause and squeeze hard at full contraction, slow controlled return","Preacher bench locks your upper arm in place — use it for the EZ bar curls for maximum bicep isolation"],
+    exercises:[
+      { id:"lat",      name:"Cable Lat Pulldown",      sets:4, reps:"8–10",  yt:"CAwf7n6Luuc" },
+      { id:"row",      name:"Dumbbell Single-Arm Row", sets:4, reps:"8–10",  yt:"KRN38chlkds" },
+      { id:"cableRow", name:"Cable Seated Row",        sets:3, reps:"10–12", yt:"GZbfZ033f74" },
+      { id:"preacher", name:"EZ Bar Preacher Curl",    sets:3, reps:"10–12", yt:"e7X6G07KnPI" },
+      { id:"hammer",   name:"Dumbbell Hammer Curl",    sets:3, reps:"12",    yt:"8XLxfXROrTo" },
+    ]},
+  { name:"Day3 - Push", subtitle:"Chest & Tris",
+    notes:["Close-grip bench: hands shoulder-width apart, keep elbows tucked — don't let them flare out","Overhead tricep extension targets the long head, key for overall arm size — use low pulley for full range of motion","Lateral raises on both push days is intentional — high volume is the fastest route to shoulder width"],
+    exercises:[
+      { id:"cgbench",     name:"Close Grip Bench Press",          sets:4, reps:"8–10",  yt:"A9MM-XkoWcw" },
+      { id:"flye2",       name:"Dumbbell Flat Bench Flye",        sets:3, reps:"12–15", yt:"U5uW6jaOiLg" },
+      { id:"pushdown",    name:"Cable Tricep Pushdown",           sets:3, reps:"12–15", yt:"-zLyUAo1gMw" },
+      { id:"kickback",    name:"Dumbbell Tricep Kickback",        sets:3, reps:"12",    yt:"6SS6K3lAwZ8" },
+      { id:"lateral2",    name:"Dumbbell Lateral Raise",          sets:3, reps:"15",    yt:"3VcKaXpzqRo" },
+    ]},
+  { name:"Day4 - Pull", subtitle:"Shoulders & Arms",
+    notes:["Face pulls are non-negotiable. Keep elbows higher than wrists, pull towards your forehead, and really focus on squeezing those rear delts","EZ bar curl: full stretch at the bottom, squeeze hard at the top on every rep","Cable curl as a finisher keeps constant tension through the whole range — great way to end the week"],
+    exercises:[
+      { id:"upright",   name:"Barbell Upright Row", sets:4, reps:"10–12", yt:"amCU-ziHITM" },
+      { id:"facepull",  name:"Cable Face Pull",      sets:3, reps:"15",    yt:"rep-qVOkqgk" },
+      { id:"ezcurl",    name:"EZ Bar Curl",          sets:4, reps:"8–10",  yt:"5NsFLGUf0Fo" },
+      { id:"cablecurl", name:"Cable Curl",           sets:3, reps:"12–15", yt:"Qt-NixlIVGM" },
+      { id:"shrug",     name:"Dumbbell Shrug",       sets:3, reps:"12–15", yt:"xDt6qbKgLkY" },
+    ]},
+{ name:"Day5", subtitle:"Legs",
+    notes:["Goblet squat heel lift: heels elevated on plates, stay upright and squat deep — knees track over toes","Romanian deadlift: hinge at the hips, keep a soft bend in the knees and the bar close to your legs all the way down","Bulgarian split squat: front foot far enough forward so your knee doesn't go past your toes — rear foot up on the bench","Hip thrust: back against the bench, bar padded across hips — drive through heels and squeeze glutes hard at the top"],
+    exercises:[
+      { id:"gobsquat",  name:"Dumbbell Goblet Squat with Heel Lift", sets:4, reps:"10–12", yt:"RUXLuZ_GLrE" },
+      { id:"rdl",       name:"Dumbbell Romanian Deadlift",           sets:4, reps:"10–12", yt:"FQKfr1YDhEk" },
+      { id:"bulgarian", name:"Dumbbell Bulgarian Split Squat",       sets:3, reps:"10",    yt:"2C-uNgKwPLE" },
+      { id:"hipthrust", name:"Barbell Hip Thrust",                   sets:4, reps:"10–12", yt:"SEdqd1n0cvg" },
+    ]},
+
+];
+
+const getRest    = id => parseInt(localStorage.getItem("rest_"+id)||45);
+const formatTime = s  => `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;
+
+function getWeekKey(ds) { const d=new Date(ds),f=new Date(d.getFullYear(),0,1),days=Math.floor((d-f)/86400000); return `${d.getFullYear()}-W${Math.ceil((days+f.getDay()+1)/7)}`; }
+function saveHistory(id,w) { if(!w)return; const k="hist_"+id,t=new Date().toISOString().slice(0,10),d=JSON.parse(localStorage.getItem(k)||"[]"); d.push({date:t,weight:parseFloat(w)}); localStorage.setItem(k,JSON.stringify(d)); }
+function getWeeklySeries(id) { const d=JSON.parse(localStorage.getItem("hist_"+id)||"[]"),wk={}; d.forEach(e=>{const w=getWeekKey(e.date);if(!wk[w]||e.weight>wk[w])wk[w]=e.weight;}); return Object.keys(wk).sort().map(w=>({week:w,weight:wk[w]})); }
+
+// ─── Highlight the next empty set input ────────────────────────────────────
+function updateNextSet(exId) {
+  const inputs = [...document.querySelectorAll(`.sets input[data-ex="${exId}"]`)];
+  // Remove pulse from all first
+  inputs.forEach(inp => inp.classList.remove("is-next"));
+  // Find first empty one and pulse it
+  const next = inputs.find(inp => !inp.value.trim());
+  if (next) next.classList.add("is-next");
+}
+
+function drawChart(canvas, series) {
+  const ctx=canvas.getContext("2d"); ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(series.length<2){ctx.fillStyle="#888";ctx.font="12px sans-serif";ctx.fillText("Not enough data yet",20,60);return;}
+  const p=30,w=canvas.width-p*2,h=canvas.height-p*2,weights=series.map(s=>s.weight),min=Math.min(...weights),max=Math.max(...weights),sx=w/(series.length-1);
+  ctx.strokeStyle="#222";ctx.lineWidth=1;for(let i=0;i<=4;i++){const y=p+(h/4)*i;ctx.beginPath();ctx.moveTo(p,y);ctx.lineTo(p+w,y);ctx.stroke();}
+  ctx.strokeStyle="#e63329";ctx.lineWidth=2;ctx.beginPath();series.forEach((pt,i)=>{const x=p+i*sx,y=p+h-((pt.weight-min)/(max-min||1))*h;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});ctx.stroke();
+  ctx.fillStyle="#fff";series.forEach((pt,i)=>{const x=p+i*sx,y=p+h-((pt.weight-min)/(max-min||1))*h;ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fill();ctx.fillStyle="#888";ctx.font="9px sans-serif";ctx.fillText(pt.weight+"kg",x-10,y-7);ctx.fillStyle="#fff";});
+}
+
+function buildTabs() {
+  const tabs=document.getElementById("tabs");
+  DAYS.forEach((d,i)=>{ const t=document.createElement("div"); t.className="tab"+(i===0?" active":""); t.innerHTML=`<span class="tab-name">${d.name}</span><span class="tab-subtitle">${d.subtitle}</span>`; t.onclick=()=>switchTab(i); tabs.appendChild(t); });
+}
+function switchTab(i) {
+  document.querySelectorAll(".tab").forEach((t,j)=>t.classList.toggle("active",i===j));
+  document.querySelectorAll(".day").forEach((d,j)=>d.classList.toggle("active",i===j));
+}
+
+function build() {
+  const app=document.getElementById("app");
+  DAYS.forEach((day,di)=>{
+    const container=document.createElement("div");
+    container.className="day"+(di===0?" active":"");
+
+    day.exercises.forEach(ex=>{
+      const div=document.createElement("div");
+      div.className="exercise";
+      const thumb=getExerciseThumbnail(ex.id);
+
+      let setsHTML='';
+      for(let i=0;i<ex.sets;i++){
+        const key="w_"+ex.id+"_"+i, prev=localStorage.getItem("prev_"+key)||'', val=localStorage.getItem(key)||'';
+        const isPB=val&&prev&&parseFloat(val)>parseFloat(prev);
+        // Determine class — has-value, is-pb, or empty
+        let cls = val ? (isPB ? 'is-pb' : 'has-value') : '';
+        setsHTML+=`<div class="set-entry"><input type="number" min="0" step="0.5" data-key="${key}" data-ex="${ex.id}" data-prev="${prev}" value="${val}" placeholder="–" class="${cls}"><div class="set-label">S${i+1}${prev?`<br><span style="color:#555">${prev}kg</span>`:''}</div><div class="pb-badge">${isPB?'🏆':''}</div></div>`;
+      }
+
+      const savedRpe=parseInt(localStorage.getItem("rpe_"+ex.id)||3);
+      const rpeCol=rpeColor(savedRpe);
+      const rpePct=((savedRpe-1)/4)*100;
+
+      div.innerHTML=`
+        <div class="exercise-header">
+          <div class="ex-header-left">
+            ${thumb ? `<img src="${thumb}" alt="${ex.name}" class="ex-thumbnail" onerror="this.style.display='none'">` : ''}
+            <div class="ex-info">
+              <div class="ex-name">${ex.name}</div>
+              <div class="ex-meta">${ex.sets} sets • ${ex.reps} reps</div>
+            </div>
+          </div>
+          <div class="exercise-toggle">▲</div>
+        </div>
+        <div class="exercise-content">
+          <div class="reps-row">Target reps: <input class="reps" data-id="${ex.id}" value="${localStorage.getItem("r_"+ex.id)||ex.reps}"></div>
+          <button class="video-toggle" data-ytid="${ex.yt}" data-open="false">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#cc0000"><path d="M23.5 6.2s-.3-2-1.2-2.8c-1.1-1.2-2.4-1.2-3-1.3C16.8 2 12 2 12 2s-4.8 0-7.3.1c-.6.1-1.9.1-3 1.3C.8 4.2.5 6.2.5 6.2S.2 8.5.2 10.8v2.1c0 2.3.3 4.6.3 4.6s.3 2 1.2 2.8c1.1 1.2 2.6 1.1 3.3 1.2C7.2 21.7 12 21.8 12 21.8s4.8 0 7.3-.2c.6-.1 1.9-.1 3-1.2.9-.8 1.2-2.8 1.2-2.8s.3-2.3.3-4.6v-2.1C23.8 8.5 23.5 6.2 23.5 6.2zM9.7 15.5V8.4l8.1 3.6-8.1 3.5z"/></svg>
+            Watch form
+          </button>
+          <div class="video-wrap" id="vw_${ex.id}"></div>
+          <div class="sets">${setsHTML}</div>
+          <div class="timer no-screenshot" data-id="${ex.id}">
+            <span class="rest-label">Rest</span>
+            <span class="time">${formatTime(getRest(ex.id))}</span>
+            <button class="start">Start</button>
+            <button class="reset">Reset</button>
+            <input type="number" class="rest" value="${getRest(ex.id)}" min="10" max="600">
+            <span style="font-size:11px;color:var(--muted)">s</span>
+            <button class="clear-weights" data-ex="${ex.id}">Clear</button>
+          </div>
+          <div class="rpe-wrap" data-id="${ex.id}">
+            <div class="rpe-header">
+              <div class="rpe-label">Effort (RPE)</div>
+              <div><div class="rpe-value" style="color:${rpeCol}">${savedRpe}<span style="font-size:13px;color:var(--muted)">/5</span></div><div class="rpe-desc">${RPE_DESCS[savedRpe]}</div></div>
+            </div>
+            <input type="range" class="rpe-slider" min="1" max="5" step="1" value="${savedRpe}" style="background:linear-gradient(to right,${rpeCol} 0%,${rpeCol} ${rpePct}%,#333 ${rpePct}%,#333 100%)">
+          </div>
+          <canvas class="chart" width="300" height="120"></canvas>
+          <button class="toggle-chart">Show Progress</button>
+        </div>`;
+
+      container.appendChild(div);
+    });
+
+    // Notes
+    if(day.notes?.length){
+      const n=document.createElement("div"); n.className="notes-box";
+      n.innerHTML=`<h4>Session Notes</h4><ul>${day.notes.map(x=>`<li>${x}</li>`).join('')}</ul>`;
+      container.appendChild(n);
+    }
+
+    // Progression
+    const pg=document.createElement("div"); pg.className="progression";
+    pg.innerHTML=`<h3>Progressive Overload Rules</h3><div class="prog-grid"><div class="prog-item"><h5>Add Weight</h5><p>When you hit the top of the rep range for all sets, add 2.5–5kg next session</p></div><div class="prog-item"><h5>Track Your Lifts</h5><p>Weights save automatically. 🏆 highlights a new personal best.</p></div><div class="prog-item"><h5>Deload Week</h5><p>Every 6–8 weeks, drop weight by 40% and do 2–3 sets per exercise</p></div><div class="prog-item"><h5>Protein Target</h5><p>Aim for 1.6–2g per kg of bodyweight daily for muscle growth</p></div></div>`;
+    container.appendChild(pg);
+
+    app.appendChild(container);
+  });
+
+  // Init next-set highlight for all exercises on load
+  DAYS.forEach(day => day.exercises.forEach(ex => updateNextSet(ex.id)));
+
+  wireUp();
+}
+
+function wireUp() {
+  // Collapse toggle
+  document.querySelectorAll(".exercise-header").forEach(hdr=>{
+    hdr.addEventListener("click",()=>{
+      const toggle=hdr.querySelector(".exercise-toggle");
+      const content=hdr.nextElementSibling;
+      const expanded=content.classList.contains("expanded");
+      content.classList.toggle("expanded",!expanded);
+      toggle.classList.toggle("expanded",!expanded);
+      toggle.textContent=!expanded?"▼":"▲";
+    });
+  });
+
+  // Reps
+  document.querySelectorAll(".reps").forEach(input=>{ input.oninput=()=>localStorage.setItem("r_"+input.dataset.id,input.value); });
+
+  // YouTube
+  document.querySelectorAll(".video-toggle").forEach(btn=>{
+    btn.onclick=()=>{
+      const wrap=document.getElementById("vw_"+btn.closest(".exercise").querySelector(".reps").dataset.id)||btn.nextElementSibling;
+      const isOpen=btn.dataset.open==="true";
+      if(isOpen){wrap.classList.remove("open");wrap.innerHTML="";btn.dataset.open="false";btn.lastChild.textContent=" Watch form";}
+      else{wrap.innerHTML=`<iframe src="https://www.youtube-nocookie.com/embed/${btn.dataset.ytid}?rel=0&modestbranding=1" allowfullscreen loading="lazy" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture"></iframe>`;wrap.classList.add("open");btn.dataset.open="true";btn.lastChild.textContent=" Hide form";}
+    };
+  });
+
+  // RPE
+  document.querySelectorAll(".rpe-slider").forEach(slider=>{
+    const wrap=slider.closest(".rpe-wrap"),valEl=wrap.querySelector(".rpe-value"),descEl=wrap.querySelector(".rpe-desc"),exId=wrap.dataset.id;
+    slider.addEventListener("input",()=>{
+      const v=parseInt(slider.value),col=rpeColor(v),pct=((v-1)/4)*100;
+      valEl.innerHTML=`${v}<span style="font-size:13px;color:var(--muted)">/5</span>`;
+      valEl.style.color=col; descEl.textContent=RPE_DESCS[v];
+      slider.style.background=`linear-gradient(to right,${col} 0%,${col} ${pct}%,#333 ${pct}%,#333 100%)`;
+      localStorage.setItem("rpe_"+exId,v);
+    });
+  });
+
+  // Timers
+  document.querySelectorAll(".timer").forEach(timer=>{
+    const id=timer.dataset.id,timeEl=timer.querySelector(".time"),startBtn=timer.querySelector(".start"),resetBtn=timer.querySelector(".reset"),restInput=timer.querySelector(".rest");
+    let duration=getRest(id),remaining=duration,interval=null;
+    restInput.onchange=()=>{duration=parseInt(restInput.value);localStorage.setItem("rest_"+id,duration);remaining=duration;timeEl.textContent=formatTime(remaining);timer.style.borderColor="#333";};
+    startBtn.onclick=()=>{if(interval)return;startBtn.textContent="Resting…";interval=setInterval(()=>{remaining--;timeEl.textContent=formatTime(remaining);if(remaining<=0){clearInterval(interval);interval=null;remaining=duration;timeEl.textContent="GO!";timer.style.borderColor="var(--green)";startBtn.textContent="Start";}},1000);};
+    resetBtn.onclick=()=>{clearInterval(interval);interval=null;remaining=duration;timeEl.textContent=formatTime(remaining);timer.style.borderColor="#333";startBtn.textContent="Start";};
+  });
+
+  // Clear weights button
+  document.querySelectorAll(".clear-weights").forEach(btn=>{
+    btn.onclick=()=>{
+      const exId=btn.dataset.ex;
+      document.querySelectorAll(`.sets input[data-ex="${exId}"]`).forEach(input=>{
+        // Save current as prev before clearing
+        const current=input.value.trim();
+        if(current) localStorage.setItem("prev_"+input.dataset.key, current);
+        localStorage.removeItem(input.dataset.key);
+        input.value="";
+        input.className="";
+        // Update prev label
+        const label=input.parentElement.querySelector(".set-label");
+        if(label && current) {
+          const span=label.querySelector("span");
+          if(span) span.textContent=`${current}kg`;
+          else label.innerHTML+=`<br><span style="color:#555">${current}kg</span>`;
+        }
+        const pb=input.parentElement.querySelector(".pb-badge");
+        if(pb) pb.textContent="";
+      });
+      // After clearing, highlight first empty set
+      updateNextSet(exId);
+    };
+  });
+
+  // Weights
+  document.querySelectorAll(".sets input").forEach(input=>{
+    input.addEventListener("change",()=>{
+      const val=input.value.trim(),key=input.dataset.key,prev=parseFloat(input.dataset.prev)||0,num=parseFloat(val),pbEl=input.parentElement.querySelector(".pb-badge");
+      localStorage.setItem(key,val); saveHistory(input.dataset.ex,val);
+      // Remove next-set pulse before re-classifying
+      input.classList.remove("is-next");
+      if(val&&prev>0&&num>prev){input.className="is-pb";if(pbEl)pbEl.textContent="🏆";}
+      else if(val){input.className="has-value";if(pbEl)pbEl.textContent="";}
+      else{input.className="";if(pbEl)pbEl.textContent="";}
+       // Update next set highlight and focus next empty input
+      updateNextSet(input.dataset.ex);
+      const nextInput = [...document.querySelectorAll(`.sets input[data-ex="${input.dataset.ex}"]`)]
+        .find(i => !i.value.trim());
+      if (nextInput) {
+        // Small delay so the rest timer starts first, then focus moves
+        setTimeout(() => nextInput.focus(), 50);
+      }
+      // Auto-start timer
+      document.querySelector(`.timer[data-id="${input.dataset.ex}"] .start`)?.click();
+    });
+  });
+
+  // Charts
+  document.querySelectorAll(".exercise").forEach(exEl=>{
+    const exId=exEl.querySelector(".reps").dataset.id,canvas=exEl.querySelector(".chart"),btn=exEl.querySelector(".toggle-chart");
+    btn.onclick=()=>{const v=canvas.style.display==="block";canvas.style.display=v?"none":"block";btn.textContent=v?"Show Progress":"Hide Progress";if(!v)drawChart(canvas,getWeeklySeries(exId));};
+  });
+
+  // Screenshot
+  document.getElementById("screenshotBtn").addEventListener("click",async()=>{
+    const btn=document.getElementById("screenshotBtn");
+    btn.classList.add("loading");btn.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span><span class="btn-label">Capturing…</span></span>`;
+    const expandedState=[];
+    document.querySelectorAll(".exercise-content").forEach(c=>expandedState.push(c.classList.contains("expanded")));
+    document.querySelectorAll(".exercise-content:not(.expanded)").forEach(c=>{c.classList.add("expanded");const t=c.previousElementSibling.querySelector(".exercise-toggle");if(t){t.classList.add("expanded");t.textContent="▼";}});
+    document.querySelectorAll(".video-wrap.open").forEach(w=>{w.classList.remove("open");w.innerHTML="";const t=w.previousElementSibling;if(t){t.dataset.open="false";t.lastChild.textContent=" Watch form";}});
+    document.querySelectorAll(".timer").forEach(timer=>timer.style.display="none");
+    document.querySelector(".spotify-section").style.display="none";
+    document.querySelectorAll(".notes-box").forEach(box=>box.style.display="none");
+    document.querySelectorAll(".progression").forEach(prog=>prog.style.display="none");
+    const bar=document.querySelector(".screenshot-bar-bottom");
+    bar.style.display="none";
+    await new Promise(r=>setTimeout(r,150));
+    try {
+      const today=new Date().toISOString().slice(0,10);
+      const activeDay=document.querySelector(".tab.active")?.textContent||"Session";
+      const canvas=await html2canvas(document.body,{backgroundColor:"#0a0a0a",scale:2,useCORS:true,logging:false,ignoreElements:el=>el.classList.contains("screenshot-bar-bottom")});
+      const link=document.createElement("a");
+      link.href=canvas.toDataURL("image/png");
+      link.download=`floody-${activeDay}-${today}.png`;
+      link.click();
+      // Restore original state after successful capture
+      bar.style.display="";
+      document.querySelector(".spotify-section").style.display="";
+      document.querySelectorAll(".notes-box").forEach(box=>box.style.display="");
+      document.querySelectorAll(".progression").forEach(prog=>prog.style.display="");
+      document.querySelectorAll(".timer").forEach(timer=>timer.style.display="");
+      document.querySelectorAll(".exercise-content").forEach((c,i)=>{if(!expandedState[i]&&c.classList.contains("expanded")){c.classList.remove("expanded");const t=c.previousElementSibling.querySelector(".exercise-toggle");if(t){t.classList.remove("expanded");t.textContent="▲";}}});
+    } catch(err){
+      alert("Screenshot failed: "+err.message);
+      bar.style.display="";
+      document.querySelector(".spotify-section").style.display="";
+      document.querySelectorAll(".notes-box").forEach(box=>box.style.display="");
+      document.querySelectorAll(".progression").forEach(prog=>prog.style.display="");
+      document.querySelectorAll(".timer").forEach(timer=>timer.style.display="");
+      document.querySelectorAll(".exercise-content").forEach((c,i)=>{if(!expandedState[i]&&c.classList.contains("expanded")){c.classList.remove("expanded");const t=c.previousElementSibling.querySelector(".exercise-toggle");if(t){t.classList.remove("expanded");t.textContent="▲";}}});
+    }
+    btn.classList.remove("loading");
+    btn.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span><span class="btn-label">Save Screenshot</span><span class="btn-sub">Track / Share your progress</span></span>`;
+  });
+}
+
+buildTabs();
+build();
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').catch(e=>console.warn('SW:',e)); }
+
+// ─────────────────────────────────────────────
+// SPOTIFY CONFIG
+// ─────────────────────────────────────────────
+
+const CLIENT_ID =
+  "02406cf659b64e6b8d7de2f2caf7f52d";
+
+const REDIRECT_URI =
+  "https://floodys-gym-tracker-dcba0.netlify.app/";
+
+const NETLIFY_FUNCTION_URL =
+  "/.netlify/functions/spotify-token";
+
+const SCOPES = [
+  "user-read-playback-state",
+  "user-modify-playback-state",
+  "user-read-currently-playing"
+];
+
+// ─────────────────────────────────────────────
+// TOKENS
+// ─────────────────────────────────────────────
+
+let accessToken =
+  localStorage.getItem("spotify_access_token");
+
+let tokenExpiry =
+  localStorage.getItem("spotify_token_expiry");
+
+// ─────────────────────────────────────────────
+// LOGIN
+// ─────────────────────────────────────────────
+
+function spotifyLogin() {
+
+  const authUrl =
+    "https://accounts.spotify.com/authorize?" +
+    new URLSearchParams({
+      response_type: "code",
+      client_id: CLIENT_ID,
+      scope: SCOPES.join(" "),
+      redirect_uri: REDIRECT_URI,
+      show_dialog: true
+    });
+
+  window.location.href = authUrl;
+}
+
+// ─────────────────────────────────────────────
+// GET AUTH CODE
+// ─────────────────────────────────────────────
+
+function getAuthCode() {
+  const params = new URLSearchParams(
+    window.location.search
+  );
+
+  return params.get("code");
+}
+
+// ─────────────────────────────────────────────
+// TOKEN EXCHANGE
+// ─────────────────────────────────────────────
+
+async function exchangeCodeForToken(code) {
+
+  try {
+
+    const res = await fetch(
+      NETLIFY_FUNCTION_URL,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ code })
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(
+        data.error || "Spotify auth failed"
+      );
+    }
+
+    const expiryTime =
+      Date.now() + (data.expires_in * 1000);
+
+    accessToken = data.access_token;
+    tokenExpiry = expiryTime;
+
+    localStorage.setItem(
+      "spotify_access_token",
+      data.access_token
+    );
+
+    localStorage.setItem(
+      "spotify_token_expiry",
+      expiryTime
+    );
+
+    if (data.refresh_token) {
+      localStorage.setItem(
+        "spotify_refresh_token",
+        data.refresh_token
+      );
+    }
+
+    // Clean URL
+    window.history.replaceState(
+      {},
+      document.title,
+      window.location.pathname
+    );
+
+    updateSpotifyUI();
+
+    updateNowPlaying();
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert(
+      "Spotify login failed. Check console."
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// REFRESH TOKEN
+// ─────────────────────────────────────────────
+
+async function refreshSpotifyToken() {
+
+  const refreshToken =
+    localStorage.getItem(
+      "spotify_refresh_token"
+    );
+
+  if (!refreshToken) {
+    return false;
+  }
+
+  try {
+
+    const res = await fetch(
+      NETLIFY_FUNCTION_URL,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          refresh_token: refreshToken
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(
+        data.error || "Token refresh failed"
+      );
+    }
+
+    accessToken = data.access_token;
+
+    const expiryTime =
+      Date.now() + (data.expires_in * 1000);
+
+    tokenExpiry = expiryTime;
+
+    localStorage.setItem(
+      "spotify_access_token",
+      data.access_token
+    );
+
+    localStorage.setItem(
+      "spotify_token_expiry",
+      expiryTime
+    );
+
+    return true;
+
+  } catch (err) {
+
+    console.error(err);
+
+    return false;
+  }
+}
+
+// ─────────────────────────────────────────────
+// TOKEN VALIDATION
+// ─────────────────────────────────────────────
+
+function isTokenExpired() {
+
+  if (!tokenExpiry) {
+    return true;
+  }
+
+  return Date.now() > parseInt(tokenExpiry);
+}
+
+// ─────────────────────────────────────────────
+// SPOTIFY API REQUEST
+// ─────────────────────────────────────────────
+
+async function spotifyRequest(
+  url,
+  method = "GET",
+  body = null
+) {
+
+  if (!accessToken || isTokenExpired()) {
+
+    const refreshed =
+      await refreshSpotifyToken();
+
+    if (!refreshed) {
+      throw new Error(
+        "Spotify authentication expired"
+      );
+    }
+  }
+
+  const options = {
+    method,
+    headers: {
+      Authorization:
+        `Bearer ${accessToken}`
+    }
+  };
+
+  if (body) {
+
+    options.headers["Content-Type"] =
+      "application/json";
+
+    options.body =
+      JSON.stringify(body);
+  }
+
+  const res = await fetch(url, options);
+
+  if (res.status === 204) {
+    return null;
+  }
+
+  if (res.status === 404) {
+
+    alert(
+      "Open Spotify on your phone or computer first."
+    );
+
+    return null;
+  }
+
+  if (!res.ok) {
+
+    let msg = res.statusText;
+
+    try {
+      const err = await res.json();
+      msg = err.error?.message || msg;
+    } catch {}
+
+    throw new Error(msg);
+  }
+
+  return await res.json();
+}
+
+// ─────────────────────────────────────────────
+// NOW PLAYING
+// ─────────────────────────────────────────────
+
+async function updateNowPlaying() {
+
+  try {
+
+    const data =
+      await spotifyRequest(
+        "https://api.spotify.com/v1/me/player/currently-playing"
+      );
+
+    if (!data || !data.item) {
+
+      document.getElementById(
+        "trackName"
+      ).textContent =
+        "No track playing";
+
+      document.getElementById(
+        "artistName"
+      ).textContent =
+        "Start Spotify playback";
+
+      return;
+    }
+
+    document.getElementById(
+      "trackName"
+    ).textContent =
+      data.item.name;
+
+    document.getElementById(
+      "artistName"
+    ).textContent =
+      data.item.artists
+        .map(a => a.name)
+        .join(", ");
+
+  } catch (err) {
+
+    console.error(err);
+  }
+}
+
+// ─────────────────────────────────────────────
+// PLAY
+// ─────────────────────────────────────────────
+
+async function playSpotify() {
+
+  try {
+
+    await spotifyRequest(
+      "https://api.spotify.com/v1/me/player/play",
+      "PUT"
+    );
+
+    updateNowPlaying();
+
+  } catch (err) {
+
+    console.error(err);
+  }
+}
+
+// ─────────────────────────────────────────────
+// PAUSE
+// ─────────────────────────────────────────────
+
+async function pauseSpotify() {
+
+  try {
+
+    await spotifyRequest(
+      "https://api.spotify.com/v1/me/player/pause",
+      "PUT"
+    );
+
+    updateNowPlaying();
+
+  } catch (err) {
+
+    console.error(err);
+  }
+}
+
+// ─────────────────────────────────────────────
+// NEXT TRACK
+// ─────────────────────────────────────────────
+
+async function nextTrack() {
+
+  try {
+
+    await spotifyRequest(
+      "https://api.spotify.com/v1/me/player/next",
+      "POST"
+    );
+
+    setTimeout(
+      updateNowPlaying,
+      1000
+    );
+
+  } catch (err) {
+
+    console.error(err);
+  }
+}
+
+// ─────────────────────────────────────────────
+// START WORKOUT PLAYLIST
+// ─────────────────────────────────────────────
+
+async function startWorkoutPlaylist() {
+
+  try {
+
+    await spotifyRequest(
+      "https://api.spotify.com/v1/me/player/play",
+      "PUT",
+      {
+        context_uri:
+          "spotify:playlist:37i9dQZF1DX76Wlfdnj7AP"
+      }
+    );
+
+    setTimeout(
+      updateNowPlaying,
+      1000
+    );
+
+  } catch (err) {
+
+    console.error(err);
+  }
+}
+
+// ─────────────────────────────────────────────
+// UI
+// ─────────────────────────────────────────────
+
+function updateSpotifyUI() {
+
+  const loginBtn =
+    document.getElementById(
+      "spotifyLogin"
+    );
+
+  const connected =
+    accessToken &&
+    !isTokenExpired();
+
+  loginBtn.textContent =
+    connected
+      ? "Spotify Connected"
+      : "Connect Spotify";
+
+  document.getElementById(
+    "playTrack"
+  ).disabled = !connected;
+
+  document.getElementById(
+    "pauseTrack"
+  ).disabled = !connected;
+
+  document.getElementById(
+    "nextTrack"
+  ).disabled = !connected;
+}
+
+// ─────────────────────────────────────────────
+// EVENT LISTENERS
+// ─────────────────────────────────────────────
+
+document.getElementById(
+  "spotifyLogin"
+).onclick = spotifyLogin;
+
+document.getElementById(
+  "playTrack"
+).onclick = playSpotify;
+
+document.getElementById(
+  "pauseTrack"
+).onclick = pauseSpotify;
+
+document.getElementById(
+  "nextTrack"
+).onclick = nextTrack;
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+
+const authCode = getAuthCode();
+
+if (authCode) {
+
+  exchangeCodeForToken(
+    authCode
+  );
+
+} else {
+
+  updateSpotifyUI();
+
+  if (
+    accessToken &&
+    !isTokenExpired()
+  ) {
+
+    updateNowPlaying();
+
+    setInterval(() => {
+
+      updateNowPlaying();
+
+    }, 5000);
+  }
+}
+
+</script>
+</body>
+</html>
