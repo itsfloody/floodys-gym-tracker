@@ -97,6 +97,8 @@ h1 span { color:var(--red); }
 .exercise-header:hover { opacity:0.9; }
 .ex-header-left { display:flex; align-items:center; gap:12px; flex:1; min-width:0; }
 .ex-thumbnail { width:48px; height:48px; border-radius:8px; flex-shrink:0; object-fit:contain; border:1px solid var(--border); filter:invert(1); padding:2px; }
+
+
 .ex-info { flex:1; min-width:0; }
 .ex-name { font-weight:600; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .ex-meta { font-size:12px; color:var(--muted); margin-top:2px; }
@@ -202,6 +204,8 @@ h1 span { color:var(--red); }
   Exercise images from <a href="https://commons.wikimedia.org" target="_blank" rel="noopener">Wikimedia Commons</a>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
 <script>
 // ─── RPE ───────────────────────────────────────────────────────────────────
 const RPE_DESCS = { 1:"Easy", 2:"Moderate", 3:"Hard", 4:"Very Hard", 5:"Max Effort" };
@@ -235,7 +239,7 @@ function getExerciseThumbnail(id) {
     ezcurl:      `${WM}/c/c0/Close_grip_ez_bar_curl_with_barbell_2.svg/60px-Close_grip_ez_bar_curl_with_barbell_2.svg.png`,
     cablecurl:   `${WM}/c/c3/Lying_bicep_cable_curl_2.svg/60px-Lying_bicep_cable_curl_2.svg.png`,
     shrug:       `${WM}/4/4e/Cable_shoulder_shrugs_2.svg/60px-Cable_shoulder_shrugs_2.svg.png`,
-    rdl:         `${WM}/f/f6/Romanian_dead_lift_2.svg/500px-Romanian_dead_lift_2.svg.png`,
+    rdl:         `${WM}/f/f6/Romanian_dead_lift_2.svg/60px-Romanian_dead_lift_2.svg.png`,
     bulgarian:   `${WM}/9/93/One_leg_squat_with_barbell_2.svg/60px-One_leg_squat_with_barbell_2.svg.png`,
     hipthrust:   `${WM}/5/5e/Bent_knee_hip_raise_1.svg/60px-Bent_knee_hip_raise_1.svg.png`,
     calfraise:   `${WM}/a/a7/Seated_calf_raise_with_barbell_2.svg/60px-Seated_calf_raise_with_barbell_2.svg.png`,
