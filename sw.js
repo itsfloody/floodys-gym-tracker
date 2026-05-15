@@ -1,4 +1,4 @@
-const CACHE = 'gym-tracker-v12';
+const CACHE = 'gym-tracker-v13';
 
 // App shell - everything needed to run offline
 const SHELL = [
@@ -6,11 +6,10 @@ const SHELL = [
   './index.html',
   './html2canvas.min.js',
 ];
-
 // Exercise images to cache on install
 const WM = "https://upload.wikimedia.org/wikipedia/commons/thumb";
 const EXERCISE_IMAGES = [...new Set([
-  `${WM}/b/b8/Incline_dumbbell_press_1.svg/60px-Incline_dumbbell_press_1.svg.png`,
+    `${WM}/b/b8/Incline_dumbbell_press_1.svg/60px-Incline_dumbbell_press_1.svg.png`,
   `${WM}/2/23/Barbell_neck_press_1.svg/60px-Barbell_neck_press_1.svg.png`,
   `${WM}/c/c2/Incline_dumbbell_flys_2.svg/60px-Incline_dumbbell_flys_2.svg.png`,
   `${WM}/a/aa/Lateral_dumbbell_raises_1.svg/60px-Lateral_dumbbell_raises_1.svg.png`,
@@ -34,32 +33,27 @@ const EXERCISE_IMAGES = [...new Set([
   `${WM}/a/a7/Seated_calf_raise_with_barbell_2.svg/60px-Seated_calf_raise_with_barbell_2.svg.png`,
 ])];
 
-// Install: cache the shell immediately
+// Install: Cache shell and images
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE).then(async cache => {
-
-      // Shell first (critical)
       await cache.addAll(SHELL);
-
-      // Images individually (robust)
+      
       const imagePromises = EXERCISE_IMAGES.map(async url => {
         try {
+          // No 'no-cors' here so html2canvas works later!
           const res = await fetch(url);
-          await cache.put(url, res);
+          if (res.ok) await cache.put(url, res);
         } catch (err) {
           console.warn('Image failed:', url);
         }
       });
-
       await Promise.allSettled(imagePromises);
     })
   );
-
   self.skipWaiting();
 });
 
-// Activate: clean up old caches
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
@@ -69,87 +63,53 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
-// Fetch handling
 self.addEventListener('fetch', e => {
-
   const url = new URL(e.request.url);
 
-  // Skip Spotify OAuth callback requests
-  if (url.searchParams.has('code')) {
-    return;
-  }
-
-  // Skip non-GET requests
+  // 1. Filter out requests we don't want to handle
+  if (url.searchParams.has('code')) return;
   if (e.request.method !== 'GET') return;
-
-  // Skip browser extensions
   if (url.protocol === 'chrome-extension:') return;
 
-  // Domains that should use network-first
-  const networkFirst = [
-    'youtube.com',
-    'ytimg.com',
-    'googleapis.com',
-    'gstatic.com',
-    'fonts.gstatic.com'
-  ];
+  const isWikimedia = url.hostname === 'upload.wikimedia.org';
 
-  const isNetworkFirst = networkFirst.some(domain =>
-    url.hostname.includes(domain)
-  );
+  // 2. Define dynamic caching helper
+  const isCachable = (res) => {
+    return res && (res.status === 200 || (res.status === 0 && isWikimedia));
+  };
 
-  // Network-first strategy
+  // 3. Strategy: Network-First for specific domains
+  const networkFirstDomains = ['youtube.com', 'ytimg.com', 'googleapis.com', 'gstatic.com'];
+  const isNetworkFirst = networkFirstDomains.some(domain => url.hostname.includes(domain));
+
   if (isNetworkFirst) {
     e.respondWith(
       fetch(e.request)
         .then(res => {
-
-          if (
-  res &&
-  res.status === 200 &&
-  url.origin === location.origin
-) {
+          if (isCachable(res)) {
             const clone = res.clone();
-
-            caches.open(CACHE).then(cache => {
-              cache.put(e.request, clone);
-            });
+            caches.open(CACHE).then(cache => cache.put(e.request, clone));
           }
-
           return res;
         })
         .catch(() => caches.match(e.request))
     );
-
     return;
   }
 
-  // Cache-first strategy
+  // 4. Strategy: Cache-First (Default)
   e.respondWith(
     caches.match(e.request).then(cached => {
-
-      if (cached) {
-        return cached;
-      }
+      if (cached) return cached;
 
       return fetch(e.request).then(res => {
-
-        if (
-  res &&
-  res.status === 200 &&
-  url.origin === location.origin
-) {
+        // Now we check if it's our origin OR Wikimedia before caching
+        if (isCachable(res) && (url.origin === location.origin || isWikimedia)) {
           const clone = res.clone();
-
-          caches.open(CACHE).then(cache => {
-            cache.put(e.request, clone);
-          });
+          caches.open(CACHE).then(cache => cache.put(e.request, clone));
         }
-
         return res;
       });
-
     })
   );
-
 });
