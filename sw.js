@@ -1,9 +1,10 @@
-const CACHE = 'gym-tracker-v7';
+const CACHE = 'gym-tracker-v12';
 
 // App shell - everything needed to run offline
 const SHELL = [
   './',
   './index.html',
+  './html2canvas.min.js',
 ];
 
 // Exercise images to cache on install
@@ -44,7 +45,7 @@ self.addEventListener('install', e => {
       // Images individually (robust)
       const imagePromises = EXERCISE_IMAGES.map(async url => {
         try {
-          const res = await fetch(url, { mode: 'no-cors' });
+          const res = await fetch(url);
           await cache.put(url, res);
         } catch (err) {
           console.warn('Image failed:', url);

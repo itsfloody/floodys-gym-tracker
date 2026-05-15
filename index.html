@@ -42,14 +42,54 @@ h1 span { color:var(--red); }
 .spotify-bar .sp-text strong { color:var(--white); display:block; margin-bottom:2px; }
 .spotify-bar a { background:#1DB954; color:#000; font-weight:700; font-size:12px; padding:7px 14px; border-radius:20px; text-decoration:none; white-space:nowrap; flex-shrink:0; transition:background 0.2s; }
 .spotify-bar a:hover { background:#1ed760; }
-
-.tabs { display:flex; gap:6px; margin-bottom:20px; overflow-x:auto; scrollbar-width:none; }
-.tabs::-webkit-scrollbar { display:none; }
-.tab { flex-shrink:0; padding:10px 14px; background:var(--card); border:1px solid var(--border); cursor:pointer; border-radius:6px; color:var(--muted); transition:all 0.2s; display:flex; flex-direction:column; align-items:center; gap:4px; }
-.tab.active { background:var(--red); border-color:var(--red); color:#fff; }
-.tab-name { font-family:'Bebas Neue',sans-serif; font-weight:500; letter-spacing:1px; }
-.tab-subtitle { font-size:10px; color:var(--muted); transition:color 0.2s; }
-.tab.active .tab-subtitle { color:rgba(255,255,255,0.7); }
+.tabs {
+  display:flex;
+  gap:4px;
+  margin-bottom:20px;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.tabs::-webkit-scrollbar {
+  display:none;
+}
+.tab {
+  flex:1;                 /* tabs share available width */
+  min-width:72px;         /* prevents tiny unusable tabs */
+  padding:7px 6px;        /* reduced horizontal padding */
+  background:var(--card);
+  border:1px solid var(--border);
+  cursor:pointer;
+  border-radius:6px;
+  color:var(--muted);
+  transition:all 0.2s;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  text-align:center;
+}
+.tab.active {
+  background:var(--red);
+  border-color:var(--red);
+  color:#fff;
+}
+.tab-name {
+  font-family:'Bebas Neue',sans-serif;
+  font-weight:500;
+  letter-spacing:0.5px;
+  font-size:14px;
+  line-height:1;
+}
+.tab-subtitle {
+  font-size:9px;
+  color:var(--muted);
+  transition:color 0.2s;
+  line-height:1.1;
+}
+.tab.active .tab-subtitle {
+  color:rgba(255,255,255,0.7);
+}
 .day { display:none; } .day.active { display:block; }
 
 .exercise { background:var(--card); border:1px solid var(--border); padding:14px; margin-bottom:12px; border-radius:10px; }
@@ -225,7 +265,7 @@ const DAYS = [
       { id:"hammer",   name:"Dumbbell Hammer Curl",    sets:3, reps:"12",    yt:"8XLxfXROrTo" },
     ]},
   { name:"Day3", subtitle:"Legs",
-    notes:["Goblet squat heel lift: heels elevated on plates, stay upright and squat deep — knees track over toes","Romanian deadlift: hinge at the hips, keep a soft bend in the knees and the bar close to your legs all the way down","Bulgarian split squat: front foot far enough forward so your knee doesn't go past your toes — rear foot up on the bench","Hip thrust: back against the bench, bar padded across hips — drive through heels and squeeze glutes hard at the top"],
+    notes:["Goblet squat heel lift: heels elevated on plates, stay upright and squat deep — knees track over toes","Romanian deadlift: hinge at the hips, keep a soft bend in the knees and the bar close to your legs all the way down","Bulgarian split squat: front foot far enough forward so your knee doesn't go past your toes — rear foot up on the bench","Hip thrust: back against the bench, weight(s) padded across hips — drive through heels and squeeze glutes hard at the top"],
     exercises:[
       { id:"gobsquat",  name:"Dumbbell Goblet Squat with Heel Lift", sets:4, reps:"10–12", yt:"RUXLuZ_GLrE" },
       { id:"rdl",       name:"Romanian Deadlift",       sets:4, reps:"10–12", yt:"FQKfr1YDhEk" },
