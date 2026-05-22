@@ -202,7 +202,12 @@ h1 span { color:var(--red); }
 .screenshot-btn .btn-sub { display:block; font-size:9px; font-weight:400; color:var(--muted); letter-spacing:0.5px; margin-top:2px; text-transform:uppercase; }
 .screenshot-btn.loading { opacity:0.5; pointer-events:none; }
 
-.footer-attribution { text-align:center; font-size:10px; color:var(--muted); margin-top:40px; padding-top:20px; border-top:1px solid var(--border); line-height:1.6; }
+.donate-bar { text-align:center; margin-top:32px; }
+.donate-btn { display:inline-flex; align-items:center; gap:8px; background:#FF5E5B; color:#fff; font-weight:700; font-size:14px; padding:11px 22px; border-radius:24px; text-decoration:none; transition:all 0.2s; box-shadow:0 4px 16px rgba(255,94,91,0.35); letter-spacing:0.3px; }
+.donate-btn:hover { background:#e54e4b; transform:translateY(-1px); box-shadow:0 6px 20px rgba(255,94,91,0.45); }
+.donate-btn span { font-size:18px; }
+.donate-sub { font-size:11px; color:var(--muted); margin-top:8px; }
+.footer-attribution { text-align:center; font-size:10px; color:var(--muted); margin-top:24px; padding-top:20px; border-top:1px solid var(--border); line-height:1.6; }
 .footer-attribution a { color:var(--muted); text-decoration:underline; }
 .footer-attribution a:hover { color:var(--white); }
 </style>
@@ -246,6 +251,11 @@ h1 span { color:var(--red); }
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     <span><span class="btn-label">Save Screenshot</span><span class="btn-sub">Track / Share your progress</span></span>
   </button>
+</div>
+
+<div class="donate-bar">
+  <a href='https://ko-fi.com/F6D31ZXSY0' target='_blank' rel="noopener"><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi6.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+  <p class="donate-sub">Built free, kept free. If it's helping your training, I appreciate the support.</p>
 </div>
 
 <footer class="footer-attribution">
@@ -907,28 +917,52 @@ function wireUp() {
     btn.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span><span class="btn-label">Capturing…</span></span>`;
     const activeDayEl=document.querySelector(".day.active");
     const activeDayName=document.querySelector(".tab.active")?.textContent||"Session";
+    const headerEl=document.querySelector("header");
+
+    // Snapshot expanded state
     const expandedState=[];
     activeDayEl.querySelectorAll(".exercise-content").forEach(c=>expandedState.push(c.classList.contains("expanded")));
+
+    // Expand all cards
     activeDayEl.querySelectorAll(".exercise-content:not(.expanded)").forEach(c=>{
       c.classList.add("expanded");
       const t=c.previousElementSibling.querySelector(".exercise-toggle");
       if(t){ t.classList.add("expanded"); t.textContent="▼"; }
     });
+
+    // Close any open videos
     document.querySelectorAll(".video-wrap.open").forEach(w=>{
       w.classList.remove("open"); w.innerHTML="";
       const t=w.previousElementSibling;
       if(t){ t.dataset.open="false"; t.querySelector(".vt-label").textContent="Watch form"; }
     });
+
+    // Hide chrome
     activeDayEl.querySelectorAll(".timer").forEach(t=>t.style.display="none");
-    
     activeDayEl.querySelectorAll(".progression").forEach(p=>p.style.display="none");
+    activeDayEl.querySelectorAll(".ex-tip").forEach(t=>t.style.display="none");
+    activeDayEl.querySelectorAll(".video-toggle").forEach(b=>b.style.display="none");
+    activeDayEl.querySelectorAll(".toggle-chart").forEach(b=>b.style.display="none");
+    activeDayEl.querySelectorAll(".swap-btn").forEach(b=>b.style.display="none");
+
+    // Hide progress charts that have no data
+    activeDayEl.querySelectorAll(".chart-container").forEach(cc=>{
+      const canvas=cc.querySelector("canvas");
+      if(!canvas || canvas.style.display==="none") cc.style.display="none";
+    });
+
     bar.style.display="none";
     await new Promise(r=>setTimeout(r,150));
+
     function restoreUI() {
       bar.style.display="";
       activeDayEl.querySelectorAll(".timer").forEach(t=>t.style.display="");
-      
       activeDayEl.querySelectorAll(".progression").forEach(p=>p.style.display="");
+      activeDayEl.querySelectorAll(".ex-tip").forEach(t=>t.style.display="");
+      activeDayEl.querySelectorAll(".video-toggle").forEach(b=>b.style.display="");
+      activeDayEl.querySelectorAll(".toggle-chart").forEach(b=>b.style.display="");
+      activeDayEl.querySelectorAll(".swap-btn").forEach(b=>b.style.display="");
+      activeDayEl.querySelectorAll(".chart-container").forEach(cc=>cc.style.display="");
       activeDayEl.querySelectorAll(".exercise-content").forEach((c,i)=>{
         if(!expandedState[i]&&c.classList.contains("expanded")){
           c.classList.remove("expanded");
@@ -937,13 +971,54 @@ function wireUp() {
         }
       });
     }
+
     try {
       const today=new Date().toISOString().slice(0,10);
-      const canvas=await html2canvas(activeDayEl, {
-        backgroundColor:"#0a0a0a", scale: window.devicePixelRatio > 1 ? 1.5 : 1, useCORS:true, logging:false
+      const scale=window.devicePixelRatio > 1 ? 1.5 : 1;
+
+      const [headerCanvas, dayCanvas]=await Promise.all([
+        html2canvas(headerEl,    { backgroundColor:"#0a0a0a", scale, useCORS:true, logging:false }),
+        html2canvas(activeDayEl, { backgroundColor:"#0a0a0a", scale, useCORS:true, logging:false }),
+      ]);
+
+      // Stitch header + day into one canvas
+      const merged=document.createElement("canvas");
+      merged.width=Math.max(headerCanvas.width, dayCanvas.width);
+      merged.height=headerCanvas.height + dayCanvas.height;
+      const mctx=merged.getContext("2d");
+      mctx.fillStyle="#0a0a0a";
+      mctx.fillRect(0,0,merged.width,merged.height);
+      mctx.drawImage(headerCanvas,0,0);
+      mctx.drawImage(dayCanvas,0,headerCanvas.height);
+
+      // Invert thumbnail images (CSS filter:invert(1) doesn't apply in html2canvas)
+      const thumbSize=48*scale;
+      activeDayEl.querySelectorAll(".ex-thumbnail").forEach(img=>{
+        if(!img.complete || img.naturalWidth===0) return;
+        const rect=img.getBoundingClientRect();
+        const dayRect=activeDayEl.getBoundingClientRect();
+        const headerH=headerCanvas.height;
+        const x=(rect.left - dayRect.left)*scale;
+        const y=(rect.top  - dayRect.top )*scale + headerH;
+        const w=rect.width*scale, h=rect.height*scale;
+
+        // Draw the image then invert the pixels in that region
+        const tmp=document.createElement("canvas");
+        tmp.width=w; tmp.height=h;
+        const tctx=tmp.getContext("2d");
+        tctx.drawImage(img,0,0,w,h);
+        const px=tctx.getImageData(0,0,w,h);
+        for(let i=0;i<px.data.length;i+=4){
+          px.data[i]  =255-px.data[i];
+          px.data[i+1]=255-px.data[i+1];
+          px.data[i+2]=255-px.data[i+2];
+        }
+        tctx.putImageData(px,0,0);
+        mctx.drawImage(tmp,x,y,w,h);
       });
+
       const link=document.createElement("a");
-      link.href=canvas.toDataURL("image/png");
+      link.href=merged.toDataURL("image/png");
       link.download=`floody-${activeDayName}-${today}.png`;
       link.click();
     } catch(err) { alert("Screenshot failed: "+err.message); }
