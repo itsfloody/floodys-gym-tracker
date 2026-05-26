@@ -1,3 +1,9 @@
+<!-- ============================================================
+     Floody's Gym Tracker
+     Built by itsfloody | https://floodys-gym-tracker.netlify.app
+     © 2026 itsfloody. Free to use, please credit if you share.
+     ============================================================ -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -67,10 +73,10 @@ h1 span { color:var(--red); }
 .ex-info { flex:1; min-width:0; }
 .ex-name { font-weight:600; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .ex-meta { font-size:12px; color:var(--muted); margin-top:2px; }
-.ex-header-right { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.ex-header-right { display:flex; align-items:center; gap:20px; flex-shrink:0; }
 .swap-btn { background:transparent; border:1px solid var(--border); color:var(--muted); border-radius:6px; width:28px; height:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; transition:all 0.2s; flex-shrink:0; }
 .swap-btn:hover { border-color:var(--red); color:var(--red); background:var(--red-dim); }
-.exercise-toggle { color:var(--red); font-size:12px; width:20px; text-align:center; transition:all 0.2s; }
+.exercise-toggle { color:var(--red); font-size:13px; width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:8px; transition:all 0.2s; }
 .exercise-content { display:none; margin-top:12px; }
 .exercise-content.expanded { display:block; }
 
@@ -192,8 +198,8 @@ h1 span { color:var(--red); }
 .modal-confirm:hover { background:#c0291f; }
 .modal-confirm:disabled { opacity:0.4; cursor:not-allowed; }
 
-.screenshot-bar-bottom { position:fixed; bottom:20px; right:20px; z-index:1000; }
-@media(max-width:768px) { .screenshot-bar-bottom { left:20px; right:20px; display:flex; justify-content:center; } }
+.screenshot-bar-bottom { position:fixed; bottom:20px; right:20px; z-index:1000; display:flex; align-items:center; gap:10px; }
+@media(max-width:768px) { .screenshot-bar-bottom { left:20px; right:20px; justify-content:center; } }
 .screenshot-btn { display:inline-flex; align-items:center; gap:7px; background:linear-gradient(135deg,#1a1a1a 0%,#222 100%); border:1px solid #3a3a3a; border-radius:8px; padding:9px 16px; cursor:pointer; font-weight:600; color:var(--white); letter-spacing:0.3px; box-shadow:0 2px 12px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.04); transition:all 0.18s ease; white-space:nowrap; }
 .screenshot-btn:hover { background:linear-gradient(135deg,#222 0%,#2a2a2a 100%); border-color:#555; transform:translateY(-1px); }
 .screenshot-btn:active { transform:translateY(0); }
@@ -201,6 +207,39 @@ h1 span { color:var(--red); }
 .screenshot-btn .btn-label { line-height:1; }
 .screenshot-btn .btn-sub { display:block; font-size:9px; font-weight:400; color:var(--muted); letter-spacing:0.5px; margin-top:2px; text-transform:uppercase; }
 .screenshot-btn.loading { opacity:0.5; pointer-events:none; }
+.history-btn { width:42px; height:42px; background:linear-gradient(135deg,#1a1a1a 0%,#222 100%); border:1px solid #3a3a3a; border-radius:8px; cursor:pointer; color:var(--white); display:flex; align-items:center; justify-content:center; box-shadow:0 2px 12px rgba(0,0,0,0.6); transition:all 0.18s ease; flex-shrink:0; position:relative; }
+.history-btn:hover { border-color:#555; transform:translateY(-1px); }
+.history-btn .hist-badge { position:absolute; top:-5px; right:-5px; background:var(--red); color:#fff; font-size:9px; font-weight:700; border-radius:10px; min-width:16px; height:16px; display:flex; align-items:center; justify-content:center; padding:0 3px; }
+@keyframes slideIn { from{transform:translateX(100%)} to{transform:translateX(0)} }
+.history-panel { position:fixed; top:0; right:0; bottom:0; width:min(420px,100vw); background:#111; border-left:1px solid var(--border); z-index:3000; display:flex; flex-direction:column; transform:translateX(100%); transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+.history-panel.open { transform:translateX(0); }
+.history-panel-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:2999; opacity:0; pointer-events:none; transition:opacity 0.3s; }
+.history-panel-backdrop.open { opacity:1; pointer-events:all; }
+.history-panel-header { padding:20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+.history-panel-title { font-family:"Bebas Neue",sans-serif; font-size:24px; letter-spacing:1px; }
+.history-close { background:transparent; border:1px solid var(--border); color:var(--muted); width:32px; height:32px; border-radius:6px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+.history-close:hover { border-color:var(--red); color:var(--red); }
+.history-panel-body { overflow-y:auto; flex:1; padding:16px; }
+.history-empty { text-align:center; padding:60px 20px; color:var(--muted); font-size:14px; line-height:1.8; }
+.history-empty span { font-size:36px; display:block; margin-bottom:12px; }
+.session-card { background:var(--card); border:1px solid var(--border); border-radius:10px; margin-bottom:12px; overflow:hidden; }
+.session-card-header { padding:12px 14px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; user-select:none; }
+.session-card-header:hover { background:#222; }
+.session-meta { flex:1; min-width:0; }
+.session-date { font-size:11px; color:var(--red); font-weight:600; letter-spacing:0.5px; text-transform:uppercase; }
+.session-day { font-family:"Bebas Neue",sans-serif; font-size:18px; letter-spacing:0.5px; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.session-card-right { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.session-delete { background:transparent; border:none; color:#444; cursor:pointer; font-size:16px; padding:4px; transition:color 0.2s; line-height:1; }
+.session-delete:hover { color:var(--red); }
+.session-toggle { color:var(--muted); font-size:11px; width:16px; text-align:center; }
+.session-body { display:none; padding:0 14px 14px; border-top:1px solid var(--border); }
+.session-body.open { display:block; }
+.session-ex { margin-top:10px; }
+.session-ex-name { font-size:12px; font-weight:600; color:var(--white); margin-bottom:4px; display:flex; align-items:center; justify-content:space-between; }
+.session-rpe { font-size:10px; color:var(--muted); }
+.session-sets-row { display:flex; flex-wrap:wrap; gap:5px; }
+.session-set-chip { background:#252525; border:1px solid #333; border-radius:5px; padding:3px 8px; font-size:11px; font-weight:600; color:var(--green); }
+.session-set-chip.empty { color:#444; border-color:#222; }
 
 .donate-bar { text-align:center; margin-top:32px; }
 .donate-btn { display:inline-flex; align-items:center; gap:8px; background:#FF5E5B; color:#fff; font-weight:700; font-size:14px; padding:11px 22px; border-radius:24px; text-decoration:none; transition:all 0.2s; box-shadow:0 4px 16px rgba(255,94,91,0.35); letter-spacing:0.3px; }
@@ -210,6 +249,17 @@ h1 span { color:var(--red); }
 .footer-attribution { text-align:center; font-size:10px; color:var(--muted); margin-top:24px; padding-top:20px; border-top:1px solid var(--border); line-height:1.6; }
 .footer-attribution a { color:var(--muted); text-decoration:underline; }
 .footer-attribution a:hover { color:var(--white); }
+
+/* Share popup */
+.share-popup { position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px); z-index:2000; background:#1c1c1c; border:1px solid var(--border); border-radius:14px; padding:16px 20px; min-width:280px; max-width:340px; box-shadow:0 8px 32px rgba(0,0,0,0.6); opacity:0; pointer-events:none; transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1); text-align:center; }
+.share-popup.show { opacity:1; pointer-events:all; transform:translateX(-50%) translateY(0); }
+.share-popup-title { font-family:"Bebas Neue",sans-serif; font-size:18px; letter-spacing:1px; color:var(--white); margin-bottom:4px; }
+.share-popup-sub { font-size:12px; color:var(--muted); margin-bottom:14px; }
+.share-popup-btns { display:flex; gap:8px; justify-content:center; }
+.share-popup-yes { flex:1; background:var(--green); border:none; color:#000; font-weight:700; padding:10px; border-radius:8px; cursor:pointer; font-size:13px; transition:background 0.2s; }
+.share-popup-yes:hover { background:#27ae60; }
+.share-popup-no { flex:1; background:#252525; border:1px solid #333; color:var(--white); font-weight:600; padding:10px; border-radius:8px; cursor:pointer; font-size:13px; transition:all 0.2s; }
+.share-popup-no:hover { border-color:#555; }
 </style>
 </head>
 <body>
@@ -249,8 +299,21 @@ h1 span { color:var(--red); }
 <div class="screenshot-bar-bottom">
   <button class="screenshot-btn" id="screenshotBtn">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-    <span><span class="btn-label">Save Screenshot</span><span class="btn-sub">Track / Share your progress</span></span>
+    <span><span class="btn-label">Log Session</span><span class="btn-sub">Share your progress</span></span>
   </button>
+  <button class="history-btn" id="historyBtn" title="Session History">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+  </button>
+</div>
+
+<!-- History Panel -->
+<div class="history-panel-backdrop" id="historyBackdrop"></div>
+<div class="history-panel" id="historyPanel">
+  <div class="history-panel-header">
+    <div class="history-panel-title">Session History</div>
+    <button class="history-close" id="historyClose">✕</button>
+  </div>
+  <div class="history-panel-body" id="historyBody"></div>
 </div>
 
 <div class="donate-bar">
@@ -262,6 +325,15 @@ h1 span { color:var(--red); }
   Exercise images from <a href="https://commons.wikimedia.org" target="_blank" rel="noopener">Wikimedia Commons</a>
 </footer>
 
+
+<div class="share-popup" id="sharePopup">
+  <div class="share-popup-title">Session Logged! 💪</div>
+  <div class="share-popup-sub" id="sharePopupSub">Want to download a screenshot to share?</div>
+  <div class="share-popup-btns">
+    <button class="share-popup-yes" id="shareYes">Yes, share it</button>
+    <button class="share-popup-no" id="shareNo">No thanks</button>
+  </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
 
@@ -302,7 +374,7 @@ const EXERCISE_LIBRARY = [
   { id:"hammer",    name:"Dumbbell Hammer Curl",         muscle:"Biceps", sets:3, reps:"12",    yt:"8XLxfXROrTo", tip:"Neutral grip throughout — palms facing each other. This targets the brachialis underneath the bicep, which pushes the bicep up and adds arm thickness. Keep your elbows pinned to your sides." },
   { id:"ezcurl",    name:"EZ Bar Curl",                  muscle:"Biceps", sets:4, reps:"8–10",  yt:"5NsFLGUf0Fo", tip:"Full stretch at the bottom, hard squeeze at the top on every rep. The EZ bar reduces wrist strain versus a straight bar. Keep your elbows pinned — if they drift forward, you're using your shoulders." },
   { id:"cablecurl", name:"Cable Curl",                   muscle:"Biceps", sets:3, reps:"12–15", yt:"Qt-NixlIVGM", tip:"Constant tension through the whole range — unlike a dumbbell curl which gets easy at the top, the cable stays loaded. Great as a finisher. Keep your elbows still and focus on squeezing the bicep at the top." },
-  { id:"incline", name:"Incline Dumbbell Curl",        muscle:"Biceps", sets:3, reps:"10–12", yt:"DCe8f6vMe9A", tip:"Set the bench to about 60°. The incline stretches the long head of the bicep fully at the bottom, which is hard to achieve with a standing curl. Let your arms hang straight down and curl from a full stretch." },
+  { id:"incline2", name:"Incline Dumbbell Curl",        muscle:"Biceps", sets:3, reps:"10–12", yt:"DCe8f6vMe9A", tip:"Set the bench to about 60°. The incline stretches the long head of the bicep fully at the bottom, which is hard to achieve with a standing curl. Let your arms hang straight down and curl from a full stretch." },
   { id:"conccurl",  name:"Concentration Curl",           muscle:"Biceps", sets:3, reps:"12",    yt:"4tqc6FQSHn8", tip:"Brace your elbow against the inside of your thigh to eliminate swinging. Curl slowly, squeeze hard at the top. This isolates the bicep peak better than almost any other exercise — don't rush it." },
   { id:"barbcurl",  name:"Barbell Curl",                 muscle:"Biceps", sets:4, reps:"8–10",  yt:"JJB8XgKltA8", tip:"Keep your elbows pinned to your sides — they shouldn't travel forward as you curl. Full extension at the bottom, full contraction at the top. If you're swinging your back, drop the weight." },
   { id:"spidcurl",  name:"Spider Curl",                  muscle:"Biceps", sets:3, reps:"12",    yt:"OK6vpxXZ2pk", tip:"Lie face-down on an incline bench, arms hanging straight down. The angle puts your biceps under constant tension with no way to cheat. Curl slowly and squeeze hard — gravity is working against you the whole time." },
@@ -350,6 +422,7 @@ function getExerciseThumbnail(id) {
   const WM = "https://upload.wikimedia.org/wikipedia/commons/thumb";
   const thumbs = {
     incline:      `${WM}/b/b8/Incline_dumbbell_press_1.svg/60px-Incline_dumbbell_press_1.svg.png`,
+    incline2:      `${WM}/b/b8/Incline_dumbbell_press_1.svg/60px-Incline_dumbbell_press_1.svg.png`,
     bench:        `${WM}/2/23/Barbell_neck_press_1.svg/60px-Barbell_neck_press_1.svg.png`,
     flye:         `${WM}/c/c2/Incline_dumbbell_flys_2.svg/60px-Incline_dumbbell_flys_2.svg.png`,
     lateral:      `${WM}/a/aa/Lateral_dumbbell_raises_1.svg/60px-Lateral_dumbbell_raises_1.svg.png`,
@@ -597,13 +670,13 @@ function renderExerciseCard(container, lib, slotPrefix, di, ei) {
       </div>
     </div>
     <div class="exercise-content">
-      <div class="reps-row">Target reps: <input class="reps" data-id="${slotPrefix}" value="${localStorage.getItem("r_"+slotPrefix)||lib.reps}"></div>
       <button class="video-toggle" data-ytid="${lib.yt}" data-open="false">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="#cc0000"><path d="M23.5 6.2s-.3-2-1.2-2.8c-1.1-1.2-2.4-1.2-3-1.3C16.8 2 12 2 12 2s-4.8 0-7.3.1c-.6.1-1.9.1-3 1.3C.8 4.2.5 6.2.5 6.2S.2 8.5.2 10.8v2.1c0 2.3.3 4.6.3 4.6s.3 2 1.2 2.8c1.1 1.2 2.6 1.1 3.3 1.2C7.2 21.7 12 21.8 12 21.8s4.8 0 7.3-.2c.6-.1 1.9-.1 3-1.2.9-.8 1.2-2.8 1.2-2.8s.3-2.3.3-4.6v-2.1C23.8 8.5 23.5 6.2 23.5 6.2zM9.7 15.5V8.4l8.1 3.6-8.1 3.5z"/></svg>
         <span class="vt-label">Watch form</span>
       </button>
       <div class="video-wrap" id="vw_${slotPrefix}"></div>
       ${lib.tip ? `<div class="ex-tip"><div class="ex-tip-icon">💡</div><div class="ex-tip-text">${lib.tip}</div></div>` : ''}
+      <div class="reps-row">Target reps: <input class="reps" data-id="${slotPrefix}" value="${localStorage.getItem("r_"+slotPrefix)||lib.reps}"></div>
       <div class="sets">${setsHTML}</div>
       <div class="timer" data-id="${slotPrefix}">
         <span class="rest-label">Rest</span>
@@ -770,11 +843,39 @@ function wireUp() {
     });
   });
 
-  // Timers with ring animation
+  // ── Shared Web Audio context for background beep ─────────────────────────
+  let audioCtx = null;
+  function getAudioCtx() {
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+  }
+  function playBeep(freq=880, duration=0.25, vol=0.6) {
+    try {
+      const ctx = getAudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = "sine";
+      gain.gain.setValueAtTime(vol, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + duration);
+    } catch(e) { /* audio not available */ }
+  }
+  function playGoBeep() {
+    // Three quick ascending beeps — hard to miss even with music on
+    playBeep(660, 0.15, 0.5);
+    setTimeout(()=>playBeep(880, 0.15, 0.6), 160);
+    setTimeout(()=>playBeep(1100, 0.3, 0.7), 320);
+  }
+
+  // Timers with ring animation + background-safe clock sync
   document.querySelectorAll(".timer").forEach(timer=>{
     const id=timer.dataset.id, timeEl=timer.querySelector(".time");
     const startBtn=timer.querySelector(".start"), resetBtn=timer.querySelector(".reset"), restInput=timer.querySelector(".rest");
     let duration=getRest(id), remaining=duration, interval=null;
+    let endTime=null; // wall-clock time when timer should finish
 
     timerStartBtns[id] = startBtn;
 
@@ -792,10 +893,10 @@ function wireUp() {
     const ringTime = ringWrap.querySelector(".timer-ring-time");
 
     function updateRing(rem, total) {
-      const pct = rem / total;
+      const pct = Math.max(0, rem) / total;
       ringProgress.style.strokeDashoffset = circumference * (1 - pct);
       ringProgress.style.stroke = rem <= 5 ? "var(--red)" : rem <= total * 0.4 ? "var(--amber)" : "var(--green)";
-      ringTime.textContent = formatTime(rem);
+      ringTime.textContent = formatTime(Math.max(0, rem));
     }
     updateRing(remaining, duration);
 
@@ -807,28 +908,61 @@ function wireUp() {
       setTimeout(() => el.remove(), 950);
     }
 
+    function timerDone() {
+      clearInterval(interval); interval=null; endTime=null;
+      remaining=duration;
+      updateRing(remaining, duration);
+      timer.style.borderColor="var(--green)";
+      startBtn.textContent="Start";
+      flashGo();
+      playGoBeep();
+    }
+
+    function startInterval() {
+      interval=setInterval(()=>{
+        // Use wall clock so tab throttling doesn't matter
+        remaining = Math.round((endTime - Date.now()) / 1000);
+        if(remaining <= 0) {
+          timerDone();
+        } else {
+          updateRing(remaining, duration);
+        }
+      }, 500); // poll every 500ms — fast enough, light enough
+    }
+
+    // Resume timer if tab comes back into focus mid-rest
+    document.addEventListener("visibilitychange", ()=>{
+      if(document.visibilityState === "visible" && endTime) {
+        remaining = Math.round((endTime - Date.now()) / 1000);
+        if(remaining <= 0) {
+          timerDone();
+        } else {
+          updateRing(remaining, duration);
+        }
+      }
+    });
+
     restInput.onchange=()=>{
       duration=parseInt(restInput.value);
       localStorage.setItem("rest_"+id, duration);
       remaining=duration; updateRing(remaining, duration); timer.style.borderColor="#333";
     };
+
     startBtn.onclick=()=>{
       if(interval) return;
+      // Unlock audio context on user gesture (required by browsers)
+      getAudioCtx().resume();
       startBtn.textContent="Resting…";
-      interval=setInterval(()=>{
-        remaining--;
-        updateRing(remaining, duration);
-        if(remaining<=0){
-          clearInterval(interval); interval=null; remaining=duration;
-          updateRing(remaining, duration);
-          timer.style.borderColor="var(--green)"; startBtn.textContent="Start";
-          flashGo();
-        }
-      },1000);
+      endTime = Date.now() + (remaining * 1000);
+      startInterval();
     };
+
     resetBtn.onclick=()=>{
-      clearInterval(interval); interval=null; remaining=duration;
-      updateRing(remaining, duration); timer.style.borderColor="#333"; startBtn.textContent="Start";
+      clearInterval(interval); interval=null; endTime=null;
+      remaining=duration;
+      updateRing(remaining, duration);
+      timer.style.borderColor="#333";
+      startBtn.textContent="Start";
     };
   });
 
@@ -909,48 +1043,37 @@ function wireUp() {
     };
   });
 
-  // Screenshot
-  document.getElementById("screenshotBtn").addEventListener("click", async()=>{
-    const btn=document.getElementById("screenshotBtn");
+  // ── Capture screenshot helper (called on demand) ─────────────────────────
+  async function captureScreenshot() {
     const bar=document.querySelector(".screenshot-bar-bottom");
-    btn.classList.add("loading");
-    btn.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span><span class="btn-label">Capturing…</span></span>`;
     const activeDayEl=document.querySelector(".day.active");
     const activeDayName=document.querySelector(".tab.active")?.textContent||"Session";
     const headerEl=document.querySelector("header");
+    const now=new Date();
+    const timestamp=now.toISOString().slice(0,16).replace("T","-").replace(/:/g,"-");
 
-    // Snapshot expanded state
     const expandedState=[];
     activeDayEl.querySelectorAll(".exercise-content").forEach(c=>expandedState.push(c.classList.contains("expanded")));
-
-    // Expand all cards
     activeDayEl.querySelectorAll(".exercise-content:not(.expanded)").forEach(c=>{
       c.classList.add("expanded");
       const t=c.previousElementSibling.querySelector(".exercise-toggle");
       if(t){ t.classList.add("expanded"); t.textContent="▼"; }
     });
-
-    // Close any open videos
     document.querySelectorAll(".video-wrap.open").forEach(w=>{
       w.classList.remove("open"); w.innerHTML="";
       const t=w.previousElementSibling;
       if(t){ t.dataset.open="false"; t.querySelector(".vt-label").textContent="Watch form"; }
     });
-
-    // Hide chrome
     activeDayEl.querySelectorAll(".timer").forEach(t=>t.style.display="none");
     activeDayEl.querySelectorAll(".progression").forEach(p=>p.style.display="none");
     activeDayEl.querySelectorAll(".ex-tip").forEach(t=>t.style.display="none");
     activeDayEl.querySelectorAll(".video-toggle").forEach(b=>b.style.display="none");
     activeDayEl.querySelectorAll(".toggle-chart").forEach(b=>b.style.display="none");
     activeDayEl.querySelectorAll(".swap-btn").forEach(b=>b.style.display="none");
-
-    // Hide progress charts that have no data
     activeDayEl.querySelectorAll(".chart-container").forEach(cc=>{
       const canvas=cc.querySelector("canvas");
       if(!canvas || canvas.style.display==="none") cc.style.display="none";
     });
-
     bar.style.display="none";
     await new Promise(r=>setTimeout(r,150));
 
@@ -973,15 +1096,11 @@ function wireUp() {
     }
 
     try {
-      const today=new Date().toISOString().slice(0,10);
       const scale=window.devicePixelRatio > 1 ? 1.5 : 1;
-
       const [headerCanvas, dayCanvas]=await Promise.all([
         html2canvas(headerEl,    { backgroundColor:"#0a0a0a", scale, useCORS:true, logging:false }),
         html2canvas(activeDayEl, { backgroundColor:"#0a0a0a", scale, useCORS:true, logging:false }),
       ]);
-
-      // Stitch header + day into one canvas
       const merged=document.createElement("canvas");
       merged.width=Math.max(headerCanvas.width, dayCanvas.width);
       merged.height=headerCanvas.height + dayCanvas.height;
@@ -990,43 +1109,215 @@ function wireUp() {
       mctx.fillRect(0,0,merged.width,merged.height);
       mctx.drawImage(headerCanvas,0,0);
       mctx.drawImage(dayCanvas,0,headerCanvas.height);
-
-      // Invert thumbnail images (CSS filter:invert(1) doesn't apply in html2canvas)
-      const thumbSize=48*scale;
       activeDayEl.querySelectorAll(".ex-thumbnail").forEach(img=>{
         if(!img.complete || img.naturalWidth===0) return;
         const rect=img.getBoundingClientRect();
         const dayRect=activeDayEl.getBoundingClientRect();
-        const headerH=headerCanvas.height;
         const x=(rect.left - dayRect.left)*scale;
-        const y=(rect.top  - dayRect.top )*scale + headerH;
+        const y=(rect.top  - dayRect.top )*scale + headerCanvas.height;
         const w=rect.width*scale, h=rect.height*scale;
-
-        // Draw the image then invert the pixels in that region
         const tmp=document.createElement("canvas");
         tmp.width=w; tmp.height=h;
         const tctx=tmp.getContext("2d");
         tctx.drawImage(img,0,0,w,h);
         const px=tctx.getImageData(0,0,w,h);
         for(let i=0;i<px.data.length;i+=4){
-          px.data[i]  =255-px.data[i];
+          px.data[i]=255-px.data[i];
           px.data[i+1]=255-px.data[i+1];
           px.data[i+2]=255-px.data[i+2];
         }
         tctx.putImageData(px,0,0);
         mctx.drawImage(tmp,x,y,w,h);
       });
-
       const link=document.createElement("a");
       link.href=merged.toDataURL("image/png");
-      link.download=`floody-${activeDayName}-${today}.png`;
+      link.download=`floody-${activeDayName}-${timestamp}.png`;
       link.click();
     } catch(err) { alert("Screenshot failed: "+err.message); }
     finally { restoreUI(); }
+  }
+
+  // ── Log button — log session then offer share ─────────────────────────────
+  const sharePopup=document.getElementById("sharePopup");
+  const sharePopupSub=document.getElementById("sharePopupSub");
+  let sharePopupTimer=null;
+
+  function showSharePopup(label) {
+    sharePopupSub.textContent=`${label} — want to download a screenshot to share?`;
+    sharePopup.classList.add("show");
+    clearTimeout(sharePopupTimer);
+    sharePopupTimer=setTimeout(()=>sharePopup.classList.remove("show"), 8000);
+  }
+
+  document.getElementById("screenshotBtn").addEventListener("click", ()=>{
+    const now=new Date();
+    const timeStr=now.toLocaleTimeString("en-NZ",{hour:"2-digit",minute:"2-digit"});
+    const dateStr=now.toLocaleDateString("en-NZ",{weekday:"short",day:"numeric",month:"short"});
+    logSession(now);
+    const activeDayName=document.querySelector(".tab.active")?.textContent||"Session";
+    showSharePopup(`${activeDayName} logged at ${timeStr}, ${dateStr}`);
+  });
+
+  document.getElementById("shareYes").addEventListener("click", async()=>{
+    sharePopup.classList.remove("show");
+    clearTimeout(sharePopupTimer);
+    const btn=document.getElementById("screenshotBtn");
+    btn.classList.add("loading");
+    await captureScreenshot();
     btn.classList.remove("loading");
-    btn.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span><span class="btn-label">Save Screenshot</span><span class="btn-sub">Track / Share your progress</span></span>`;
+  });
+
+  document.getElementById("shareNo").addEventListener("click", ()=>{
+    sharePopup.classList.remove("show");
+    clearTimeout(sharePopupTimer);
   });
 }
+
+// ─── Session History ───────────────────────────────────────────────────────
+const MAX_SESSIONS = 10;
+
+function getSessions() {
+  return JSON.parse(localStorage.getItem("sessions") || "[]");
+}
+
+function saveSessions(sessions) {
+  localStorage.setItem("sessions", JSON.stringify(sessions));
+}
+
+function logSession(now=new Date()) {
+  const DAYS = loadDays();
+  const activeIdx = [...document.querySelectorAll(".tab")].findIndex(t => t.classList.contains("active"));
+  if(activeIdx < 0) return;
+
+  const day = DAYS[activeIdx];
+  const dayName = DEFAULT_DAYS[activeIdx].name;
+  const today = now.toISOString().slice(0, 10);
+  const timeStr = now.toLocaleTimeString("en-NZ",{hour:"2-digit",minute:"2-digit"});
+
+  const exercises = day.exercises.map((exId, ei) => {
+    const lib = getLibEntry(exId);
+    if(!lib) return null;
+    const slotPrefix = `s${activeIdx}_${ei}`;
+    const sets = [];
+    for(let i = 0; i < lib.sets; i++) {
+      const val = localStorage.getItem(`w_${slotPrefix}_${i}`) || "";
+      sets.push(val);
+    }
+    const rpe = parseInt(localStorage.getItem("rpe_" + slotPrefix) || 3);
+    return { name: lib.name, sets, rpe };
+  }).filter(Boolean);
+
+  const session = { date: today, time: timeStr, dayName, exercises };
+
+  let sessions = getSessions();
+  // Prevent duplicate log for same day + same dayName
+  sessions = sessions.filter(s => !(s.date === today && s.dayName === dayName));
+  sessions.unshift(session);
+  if(sessions.length > MAX_SESSIONS) sessions = sessions.slice(0, MAX_SESSIONS);
+  saveSessions(sessions);
+  updateHistoryBadge();
+}
+
+function updateHistoryBadge() {
+  const sessions = getSessions();
+  const badge = document.querySelector(".hist-badge");
+  if(!badge) return;
+  if(sessions.length > 0) {
+    badge.textContent = sessions.length;
+    badge.style.display = "flex";
+  } else {
+    badge.style.display = "none";
+  }
+}
+
+function formatDate(iso) {
+  const d = new Date(iso + "T00:00:00");
+  return d.toLocaleDateString("en-NZ", { weekday:"short", day:"numeric", month:"short", year:"numeric" });
+}
+
+function renderHistory() {
+  const body = document.getElementById("historyBody");
+  const sessions = getSessions();
+
+  if(sessions.length === 0) {
+    body.innerHTML = `<div class="history-empty"><span>🏋️</span>No sessions logged yet.<br>Hit "Save Screenshot" after your next workout to log it.</div>`;
+    return;
+  }
+
+  body.innerHTML = sessions.map((s, si) => {
+    const exRows = s.exercises.map(ex => {
+      const rpeLabel = RPE_DESCS[ex.rpe] || "";
+      const chips = ex.sets.map(v =>
+        v ? `<div class="session-set-chip">${v}kg</div>`
+          : `<div class="session-set-chip empty">—</div>`
+      ).join("");
+      return `
+        <div class="session-ex">
+          <div class="session-ex-name">
+            <span>${ex.name}</span>
+            <span class="session-rpe">RPE ${ex.rpe} · ${rpeLabel}</span>
+          </div>
+          <div class="session-sets-row">${chips}</div>
+        </div>`;
+    }).join("");
+
+    return `
+      <div class="session-card" data-si="${si}">
+        <div class="session-card-header">
+          <div class="session-meta">
+            <div class="session-date">${formatDate(s.date)}${s.time ? " · " + s.time : ""}</div>
+            <div class="session-day">${s.dayName}</div>
+          </div>
+          <div class="session-card-right">
+            <button class="session-delete" data-si="${si}" title="Delete">🗑</button>
+            <div class="session-toggle">▼</div>
+          </div>
+        </div>
+        <div class="session-body">${exRows}</div>
+      </div>`;
+  }).join("");
+
+  // Expand/collapse
+  body.querySelectorAll(".session-card-header").forEach(hdr => {
+    hdr.addEventListener("click", e => {
+      if(e.target.closest(".session-delete")) return;
+      const body = hdr.nextElementSibling;
+      const tog = hdr.querySelector(".session-toggle");
+      const open = body.classList.toggle("open");
+      tog.textContent = open ? "▲" : "▼";
+    });
+  });
+
+  // Delete
+  body.querySelectorAll(".session-delete").forEach(btn => {
+    btn.addEventListener("click", e => {
+      e.stopPropagation();
+      const si = parseInt(btn.dataset.si);
+      const sessions = getSessions();
+      sessions.splice(si, 1);
+      saveSessions(sessions);
+      updateHistoryBadge();
+      renderHistory();
+    });
+  });
+}
+
+function openHistoryPanel() {
+  renderHistory();
+  document.getElementById("historyPanel").classList.add("open");
+  document.getElementById("historyBackdrop").classList.add("open");
+}
+
+function closeHistoryPanel() {
+  document.getElementById("historyPanel").classList.remove("open");
+  document.getElementById("historyBackdrop").classList.remove("open");
+}
+
+document.getElementById("historyBtn").addEventListener("click", openHistoryPanel);
+document.getElementById("historyClose").addEventListener("click", closeHistoryPanel);
+document.getElementById("historyBackdrop").addEventListener("click", closeHistoryPanel);
+
+updateHistoryBadge();
 
 // ─── Modal events ──────────────────────────────────────────────────────────
 document.getElementById("modalCancel").addEventListener("click", closeSwapModal);
