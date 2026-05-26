@@ -1,9 +1,8 @@
 <!-- ============================================================
      Floody's Gym Tracker
-     Built by itsfloody | https://floodys-gym-tracker.netlify.app
-     © 2026 itsfloody. Free to use, please credit if you share.
+     Built by Itsfloody | https://floodys-gym-tracker.netlify.app
+     © 2026 Itsfloody. Free to use, please credit if you share.
      ============================================================ -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -93,6 +92,7 @@ h1 span { color:var(--red); }
 .sets input { width:64px; text-align:center; background:#252525; border:2px solid #333; color:var(--white); padding:5px 4px; font-weight:600; border-radius:6px; transition:border-color 0.2s,box-shadow 0.2s,background 0.2s; }
 .sets input::placeholder { color:#555; font-weight:400; }
 .sets input.has-value { border-color:var(--green); background:var(--green-dim); color:var(--green); }
+.sets input.is-prefilled { border-color:#444; background:#1a1a1a; color:var(--muted); }
 .sets input.is-pb      { border-color:var(--amber); background:var(--amber-dim); color:var(--amber); }
 .sets input.is-next    { animation:pulse-next 1.4s ease infinite; background:var(--red-dim); }
 .set-entry { display:flex; flex-direction:column; align-items:center; gap:3px; }
@@ -374,7 +374,7 @@ const EXERCISE_LIBRARY = [
   { id:"hammer",    name:"Dumbbell Hammer Curl",         muscle:"Biceps", sets:3, reps:"12",    yt:"8XLxfXROrTo", tip:"Neutral grip throughout — palms facing each other. This targets the brachialis underneath the bicep, which pushes the bicep up and adds arm thickness. Keep your elbows pinned to your sides." },
   { id:"ezcurl",    name:"EZ Bar Curl",                  muscle:"Biceps", sets:4, reps:"8–10",  yt:"5NsFLGUf0Fo", tip:"Full stretch at the bottom, hard squeeze at the top on every rep. The EZ bar reduces wrist strain versus a straight bar. Keep your elbows pinned — if they drift forward, you're using your shoulders." },
   { id:"cablecurl", name:"Cable Curl",                   muscle:"Biceps", sets:3, reps:"12–15", yt:"Qt-NixlIVGM", tip:"Constant tension through the whole range — unlike a dumbbell curl which gets easy at the top, the cable stays loaded. Great as a finisher. Keep your elbows still and focus on squeezing the bicep at the top." },
-  { id:"incline2", name:"Incline Dumbbell Curl",        muscle:"Biceps", sets:3, reps:"10–12", yt:"DCe8f6vMe9A", tip:"Set the bench to about 60°. The incline stretches the long head of the bicep fully at the bottom, which is hard to achieve with a standing curl. Let your arms hang straight down and curl from a full stretch." },
+  { id:"inclinedb", name:"Incline Dumbbell Curl",        muscle:"Biceps", sets:3, reps:"10–12", yt:"DCe8f6vMe9A", tip:"Set the bench to about 60°. The incline stretches the long head of the bicep fully at the bottom, which is hard to achieve with a standing curl. Let your arms hang straight down and curl from a full stretch." },
   { id:"conccurl",  name:"Concentration Curl",           muscle:"Biceps", sets:3, reps:"12",    yt:"4tqc6FQSHn8", tip:"Brace your elbow against the inside of your thigh to eliminate swinging. Curl slowly, squeeze hard at the top. This isolates the bicep peak better than almost any other exercise — don't rush it." },
   { id:"barbcurl",  name:"Barbell Curl",                 muscle:"Biceps", sets:4, reps:"8–10",  yt:"JJB8XgKltA8", tip:"Keep your elbows pinned to your sides — they shouldn't travel forward as you curl. Full extension at the bottom, full contraction at the top. If you're swinging your back, drop the weight." },
   { id:"spidcurl",  name:"Spider Curl",                  muscle:"Biceps", sets:3, reps:"12",    yt:"OK6vpxXZ2pk", tip:"Lie face-down on an incline bench, arms hanging straight down. The angle puts your biceps under constant tension with no way to cheat. Curl slowly and squeeze hard — gravity is working against you the whole time." },
@@ -422,7 +422,7 @@ function getExerciseThumbnail(id) {
   const WM = "https://upload.wikimedia.org/wikipedia/commons/thumb";
   const thumbs = {
     incline:      `${WM}/b/b8/Incline_dumbbell_press_1.svg/60px-Incline_dumbbell_press_1.svg.png`,
-    incline2:      `${WM}/b/b8/Incline_dumbbell_press_1.svg/60px-Incline_dumbbell_press_1.svg.png`,
+    inclinedb:      `${WM}/b/b8/Incline_dumbbell_press_1.svg/60px-Incline_dumbbell_press_1.svg.png`,
     bench:        `${WM}/2/23/Barbell_neck_press_1.svg/60px-Barbell_neck_press_1.svg.png`,
     flye:         `${WM}/c/c2/Incline_dumbbell_flys_2.svg/60px-Incline_dumbbell_flys_2.svg.png`,
     lateral:      `${WM}/a/aa/Lateral_dumbbell_raises_1.svg/60px-Lateral_dumbbell_raises_1.svg.png`,
@@ -980,8 +980,7 @@ function wireUp() {
         const prev = input.dataset.prev;
         if(prev) {
           input.value = prev;
-          input.className = "has-value";
-          input.select();
+          input.className = "is-prefilled";
         } else {
           input.value = ""; input.className = "";
         }
