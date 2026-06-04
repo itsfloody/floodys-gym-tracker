@@ -1,7 +1,7 @@
 <!-- ============================================================
      Floody's Gym Tracker
-     Built by Itsfloody | https://floodys-gym-tracker.netlify.app
-     © 2026 Itsfloody. Free to use, please credit if you share.
+     Built by Floody | https://floodys-gym-tracker.netlify.app
+     © 2026 Floody. Free to use, please credit if you share.
      ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,6 +9,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark">
+<meta name="description" content="Free progressive overload gym tracker. No login, no subscription. Works offline. Track sets, weights, rest timers and session history.">
+<meta name="theme-color" content="#0a0a0a">
+<meta property="og:title" content="Floody's Gym Tracker">
+<meta property="og:description" content="Free progressive overload gym tracker. No login, no subscription. Works offline.">
+<meta property="og:url" content="https://floodys-gym-tracker.netlify.app">
 <title>Floody's Gym Tracker</title>
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -73,9 +78,9 @@ h1 span { color:var(--red); }
 .ex-name { font-weight:600; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .ex-meta { font-size:12px; color:var(--muted); margin-top:2px; }
 .ex-header-right { display:flex; align-items:center; gap:20px; flex-shrink:0; }
-.swap-btn { background:transparent; border:1px solid var(--border); color:var(--muted); border-radius:6px; width:28px; height:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; transition:all 0.2s; flex-shrink:0; }
+.swap-btn { background:transparent; border:1px solid var(--border); color:var(--muted); border-radius:6px; width:28px; height:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; transition:all 0.2s; flex-shrink:0; touch-action:manipulation; }
 .swap-btn:hover { border-color:var(--red); color:var(--red); background:var(--red-dim); }
-.exercise-toggle { color:var(--red); font-size:13px; width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:8px; transition:all 0.2s; }
+.exercise-toggle { color:var(--red); font-size:13px; width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:8px; transition:all 0.2s; touch-action:manipulation; }
 .exercise-content { display:none; margin-top:12px; }
 .exercise-content.expanded { display:block; }
 
@@ -104,7 +109,7 @@ h1 span { color:var(--red); }
 .timer-ring-wrap { position:relative; width:40px; height:40px; flex-shrink:0; }
 .timer-ring { position:absolute; inset:0; transform:rotate(-90deg); }
 .timer-ring-bg { fill:none; stroke:#333; stroke-width:3; }
-.timer-ring-progress { fill:none; stroke:var(--green); stroke-width:3; stroke-linecap:round; stroke-dasharray:113; stroke-dashoffset:0; transition:stroke 0.3s, stroke-dashoffset 1s linear; }
+.timer-ring-progress { fill:none; stroke:var(--green); stroke-width:3; stroke-linecap:round; stroke-dasharray:113; stroke-dashoffset:0; transition:stroke 0.3s, stroke-dashoffset 0.6s linear; }
 .timer-ring-time { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11px; line-height:1; }
 .timer button { background:#252525; border:1px solid #333; color:white; padding:4px 10px; cursor:pointer; border-radius:4px; transition:all 0.2s; white-space:nowrap; }
 .timer button:hover { border-color:#555; }
@@ -260,9 +265,67 @@ h1 span { color:var(--red); }
 .share-popup-yes:hover { background:#27ae60; }
 .share-popup-no { flex:1; background:#252525; border:1px solid #333; color:var(--white); font-weight:600; padding:10px; border-radius:8px; cursor:pointer; font-size:13px; transition:all 0.2s; }
 .share-popup-no:hover { border-color:#555; }
+
+/* ── Splash Screen ───────────────────────────────────────────────── */
+@keyframes splashFadeOut {
+  0%   { opacity:1; }
+  80%  { opacity:1; }
+  100% { opacity:0; pointer-events:none; }
+}
+@keyframes splashLogo {
+  0%   { opacity:0; transform:translateY(30px) scale(0.95); }
+  40%  { opacity:1; transform:translateY(0) scale(1); }
+  80%  { opacity:1; transform:translateY(0) scale(1); }
+  100% { opacity:0; transform:translateY(-20px) scale(1.02); }
+}
+@keyframes splashBar {
+  0%   { width:0%; }
+  100% { width:100%; }
+}
+#splash {
+  position:fixed; inset:0; z-index:9998;
+  background:var(--black);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  animation:splashFadeOut 2.4s ease forwards;
+  pointer-events:all;
+}
+#splash.done { display:none; }
+.splash-eyebrow {
+  font-size:11px; letter-spacing:4px; text-transform:uppercase;
+  color:var(--red); font-weight:600; margin-bottom:10px;
+  animation:splashLogo 2.4s ease forwards;
+}
+.splash-title {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(52px,16vw,108px);
+  line-height:0.9; letter-spacing:2px;
+  animation:splashLogo 2.4s ease forwards;
+}
+.splash-title span { color:var(--red); }
+.splash-subtitle {
+  margin-top:14px; color:var(--muted);
+  font-size:13px; letter-spacing:1px;
+  animation:splashLogo 2.4s ease forwards;
+}
+.splash-bar-wrap {
+  margin-top:40px; width:160px; height:2px;
+  background:#222; border-radius:2px; overflow:hidden;
+}
+.splash-bar {
+  height:100%; background:var(--red); border-radius:2px;
+  animation:splashBar 2s ease forwards;
+}
 </style>
 </head>
 <body>
+
+<div id="splash">
+  <div class="splash-eyebrow">Fitness Journey</div>
+  <div class="splash-title">Floody's <span>Gym</span> Tracker</div>
+  <p class="splash-subtitle">Strength. Consistency. Progress</p>
+  <div class="splash-bar-wrap"><div class="splash-bar"></div></div>
+</div>
 
 <header>
   <div class="eyebrow">Fitness Journey</div>
@@ -303,6 +366,7 @@ h1 span { color:var(--red); }
   </button>
   <button class="history-btn" id="historyBtn" title="Session History">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <span class="hist-badge" style="display:none"></span>
   </button>
 </div>
 
@@ -317,12 +381,15 @@ h1 span { color:var(--red); }
 </div>
 
 <div class="donate-bar">
-  <a href='https://ko-fi.com/F6D31ZXSY0' target='_blank' rel="noopener"><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi6.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+  <a class="donate-btn" href="https://ko-fi.com/F6D31ZXSY0" target="_blank" rel="noopener">
+    <span>☕</span> Buy me a coffee
+  </a>
   <p class="donate-sub">Built free, kept free. If it's helping your training, I appreciate the support.</p>
 </div>
 
 <footer class="footer-attribution">
-  Exercise images from <a href="https://commons.wikimedia.org" target="_blank" rel="noopener">Wikimedia Commons</a>
+  Exercise images from <a href="https://commons.wikimedia.org" target="_blank" rel="noopener">Wikimedia Commons</a><br>
+  <span id="appVersion" style="color:#444;font-size:10px;"></span>
 </footer>
 
 
@@ -422,7 +489,6 @@ function getExerciseThumbnail(id) {
   const WM = "https://upload.wikimedia.org/wikipedia/commons/thumb";
   const thumbs = {
     incline:      `${WM}/b/b8/Incline_dumbbell_press_1.svg/60px-Incline_dumbbell_press_1.svg.png`,
-    inclinedb:      `${WM}/b/b8/Incline_dumbbell_press_1.svg/60px-Incline_dumbbell_press_1.svg.png`,
     bench:        `${WM}/2/23/Barbell_neck_press_1.svg/60px-Barbell_neck_press_1.svg.png`,
     flye:         `${WM}/c/c2/Incline_dumbbell_flys_2.svg/60px-Incline_dumbbell_flys_2.svg.png`,
     lateral:      `${WM}/a/aa/Lateral_dumbbell_raises_1.svg/60px-Lateral_dumbbell_raises_1.svg.png`,
@@ -494,7 +560,10 @@ function loadDays() {
     ...day,
     exercises: day.exercises.map((defaultId, ei) => {
       const saved = localStorage.getItem(`slot_${di}_${ei}`);
-      return saved || defaultId;
+      // Fall back to default if saved ID no longer exists in library
+      if(saved && getLibEntry(saved)) return saved;
+      if(saved) localStorage.removeItem(`slot_${di}_${ei}`); // clean up stale
+      return defaultId;
     })
   }));
 }
@@ -1239,7 +1308,7 @@ function renderHistory() {
   const sessions = getSessions();
 
   if(sessions.length === 0) {
-    body.innerHTML = `<div class="history-empty"><span>🏋️</span>No sessions logged yet.<br>Hit "Save Screenshot" after your next workout to log it.</div>`;
+    body.innerHTML = `<div class="history-empty"><span>🏋️</span>No sessions logged yet.<br>Hit "Log Session" after your next workout.</div>`;
     return;
   }
 
@@ -1329,6 +1398,15 @@ document.getElementById("modalSearch").addEventListener("input", e => {
 });
 
 // ─── Init ──────────────────────────────────────────────────────────────────
+// ── Dismiss splash after animation ───────────────────────────────────────
+setTimeout(() => {
+  const splash = document.getElementById("splash");
+  if(splash) splash.classList.add("done");
+}, 2400);
+
+const APP_VERSION = 'v1.0.0';
+const _vEl = document.getElementById('appVersion'); if(_vEl) _vEl.textContent = APP_VERSION;
+
 buildTabs();
 build();
 if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').catch(e=>console.warn('SW:',e)); }
