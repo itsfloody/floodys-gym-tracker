@@ -489,7 +489,7 @@ function getExerciseThumbnail(id) {
   const WM = "https://upload.wikimedia.org/wikipedia/commons/thumb";
   const thumbs = {
     incline:      `${WM}/b/b8/Incline_dumbbell_press_1.svg/60px-Incline_dumbbell_press_1.svg.png`,
-    inclinedb:      `${WM}/b/b8/Incline_dumbbell_press_1.svg/60px-Incline_dumbbell_press_1.svg.png`,
+	inclinedb:    `${WM}/b/b8/Incline_dumbbell_press_1.svg/60px-Incline_dumbbell_press_1.svg.png`,
     bench:        `${WM}/2/23/Barbell_neck_press_1.svg/60px-Barbell_neck_press_1.svg.png`,
     flye:         `${WM}/c/c2/Incline_dumbbell_flys_2.svg/60px-Incline_dumbbell_flys_2.svg.png`,
     lateral:      `${WM}/a/aa/Lateral_dumbbell_raises_1.svg/60px-Lateral_dumbbell_raises_1.svg.png`,
@@ -1093,8 +1093,9 @@ function wireUp() {
     const slotId=exEl.querySelector(".reps").dataset.id;
     const btn=exEl.querySelector(".toggle-chart");
     const chartContainer=exEl.querySelector(".chart-container");
-    const history = getWeeklySeries(slotId);
-    if(history.length < 2){ btn.style.display = "none"; }
+    const rawHistory = JSON.parse(localStorage.getItem("hist_"+slotId)||"[]");
+    const uniqueWeights = new Set(rawHistory.map(e => e.weight));
+    if(uniqueWeights.size < 2){ btn.style.display = "none"; }
     btn.onclick=()=>{
       let canvas=chartContainer.querySelector("canvas");
       if(!canvas){
@@ -1243,7 +1244,7 @@ function wireUp() {
 }
 
 // ─── Session History ───────────────────────────────────────────────────────
-const MAX_SESSIONS = 10;
+const MAX_SESSIONS = 20;
 
 function getSessions() {
   return JSON.parse(localStorage.getItem("sessions") || "[]");
