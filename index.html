@@ -147,6 +147,23 @@ h1 span { color:var(--red); }
 .prog-item { border-left:2px solid var(--red); padding-left:12px; }
 .prog-item h5 { font-size:12px; font-weight:600; color:var(--white); margin-bottom:3px; }
 .prog-item p { font-size:11px; color:var(--muted); line-height:1.5; }
+.cardio-finisher { margin-top:24px; padding:16px; border:1px solid #31534a; border-left:3px solid var(--green); border-radius:8px; background:#121a17; }
+.cardio-finisher h3 { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:1px; margin-bottom:10px; }
+.cardio-controls { display:flex; align-items:end; gap:12px; flex-wrap:wrap; }
+.cardio-field { display:flex; flex-direction:column; gap:5px; }
+.cardio-field label { color:var(--muted); font-size:11px; text-transform:uppercase; font-weight:600; }
+.cardio-field select, .cardio-field input { min-height:40px; background:#0b0f0d; color:var(--white); border:1px solid #355047; border-radius:5px; padding:7px 10px; }
+.cardio-field select { min-width:190px; }
+.cardio-field input { width:92px; }
+.cardio-timer { display:flex; align-items:center; gap:8px; margin-left:auto; }
+.cardio-clock { min-width:72px; color:var(--green); font-family:'Bebas Neue',sans-serif; font-size:25px; line-height:1; text-align:center; font-variant-numeric:tabular-nums; }
+.cardio-timer button { min-height:40px; border:1px solid var(--green); border-radius:5px; cursor:pointer; padding:7px 14px; font-weight:700; }
+.cardio-go { background:var(--green); color:#07110b; }
+.cardio-go:disabled { opacity:0.65; cursor:default; }
+.cardio-reset { background:transparent; color:var(--white); font-size:20px; width:40px; padding:0 !important; }
+.cardio-status { min-width:68px; color:var(--muted); font-size:11px; }
+.cardio-note { color:var(--muted); font-size:11px; line-height:1.5; margin-top:9px; }
+@media(max-width:520px) { .cardio-timer { width:100%; margin-left:0; } .cardio-status { margin-left:auto; } }
 
 /* ── Exercise Swap Modal ─────────────────────────────────────────── */
 .modal-backdrop {
@@ -554,6 +571,14 @@ const DEFAULT_DAYS = [
   { name:"Day4 - Push", exercises:["cgbench","flye","pushdown","kickback","lateral"] },
   { name:"Day5 - Pull", exercises:["upright","facepull","ezcurl","cablecurl","shrug"] },
 ];
+const CARDIO_FINISHERS = {
+  skipping: { label:"Skipping", minutes:10 },
+  cycling: { label:"Cycling", minutes:15 },
+  running: { label:"Running", minutes:12 },
+  jumpSquats: { label:"Jump Squats", minutes:8 },
+  rowing: { label:"Rowing Machine", minutes:12 },
+  inclineWalk: { label:"Incline Treadmill Walk", minutes:20 },
+};
 
 // Load saved exercise swaps from localStorage
 function loadDays() {
@@ -580,15 +605,16 @@ function getWeekKey(ds) {
   return `${d.getFullYear()}-W${Math.ceil((days+f.getDay()+1)/7)}`;
 }
 function saveHistory(id,w) {
-  if(!w) return;
+  const weight = Number(w);
+  if(!w || !Number.isFinite(weight)) return;
   const k="hist_"+id, t=new Date().toISOString().slice(0,10);
   const d=JSON.parse(localStorage.getItem(k)||"[]");
-  d.push({date:t, weight:parseFloat(w)});
+  d.push({date:t, weight});
   localStorage.setItem(k, JSON.stringify(d));
 }
 function getWeeklySeries(id) {
   const d=JSON.parse(localStorage.getItem("hist_"+id)||"[]"), wk={};
-  d.forEach(e=>{ const w=getWeekKey(e.date); if(!wk[w]||e.weight>wk[w]) wk[w]=e.weight; });
+  d.forEach(e=>{ if(!Number.isFinite(e.weight)) return; const w=getWeekKey(e.date); if(!wk[w]||e.weight>wk[w]) wk[w]=e.weight; });
   return Object.keys(wk).sort().map(w=>({week:w, weight:wk[w]}));
 }
 function updateNextSet(exId) {
@@ -615,15 +641,22 @@ function drawChart(canvas, series) {
 const timerStartBtns = {};
 
 function handleWeightChange(input) {
-  const val  = input.value.trim();
+  const raw  = input.value.trim();
+  const val  = /^bw$/i.test(raw) ? "BW" : raw;
+  const num  = val === "" ? NaN : Number(val);
+  const isNumeric = Number.isFinite(num) && num >= 0;
+  if(val && val !== "BW" && !isNumeric) {
+    input.value = "";
+    return handleWeightChange(input);
+  }
+  input.value = val;
   const key  = input.dataset.key;
   const prev = parseFloat(input.dataset.prev) || 0;
-  const num  = parseFloat(val);
   const pbEl = input.parentElement.querySelector(".pb-badge");
   localStorage.setItem(key, val);
-  if(val && (!prev || num > prev)) saveHistory(input.dataset.ex, val);
+  if(isNumeric && (!prev || num > prev)) saveHistory(input.dataset.ex, val);
   input.classList.remove("is-next");
-  if(val && prev > 0 && num > prev) {
+  if(isNumeric && prev > 0 && num > prev) {
     input.className = "is-pb";
     if(pbEl) pbEl.textContent = "🏆";
   } else if(val) {
@@ -688,6 +721,8 @@ function build() {
       renderExerciseCard(container, lib, slotPrefix, di, ei);
     });
 
+    container.appendChild(renderCardioFinisher(di));
+
     const pg=document.createElement("div"); pg.className="progression";
     pg.innerHTML=`<h3>Progressive Overload Rules</h3><div class="prog-grid"><div class="prog-item"><h5>Add Weight</h5><p>When you hit the top of the rep range for all sets, add 2.5–5kg next session</p></div><div class="prog-item"><h5>Track Your Lifts</h5><p>Weights save automatically. 🏆 highlights a new personal best.</p></div><div class="prog-item"><h5>Deload Week</h5><p>Every 6–8 weeks, drop weight by 40% and do 2–3 sets per exercise</p></div><div class="prog-item"><h5>Protein Target</h5><p>Aim for 1.6–2g per kg of bodyweight daily for muscle growth</p></div></div>`;
     container.appendChild(pg);
@@ -715,10 +750,11 @@ function renderExerciseCard(container, lib, slotPrefix, di, ei) {
   for(let i=0;i<lib.sets;i++){
     const key=`w_${slotPrefix}_${i}`;
     const prev=localStorage.getItem("prev_"+key)||'';
-    const val=localStorage.getItem(key)||'';
-    const isPB=val&&prev&&parseFloat(val)>parseFloat(prev);
+    const savedVal=localStorage.getItem(key)||'';
+    const val=/^bw$/i.test(savedVal)?"BW":(savedVal!==""&&Number.isFinite(Number(savedVal))?savedVal:"");
+    const isPB=val&&prev&&val!=="BW"&&Number(val)>Number(prev);
     const cls=val?(isPB?'is-pb':'has-value'):'';
-    setsHTML+=`<div class="set-entry"><input type="number" min="0" step="0.5" data-key="${key}" data-ex="${slotPrefix}" data-prev="${prev}" value="${val}" placeholder="–" class="${cls}"><div class="set-label">S${i+1}${prev?`<br><span style="color:#555">${prev}kg</span>`:''}</div><div class="pb-badge">${isPB?'🏆':''}</div></div>`;
+    setsHTML+=`<div class="set-entry"><input type="text" inputmode="decimal" maxlength="12" data-key="${key}" data-ex="${slotPrefix}" data-prev="${prev}" value="${val}" placeholder="–" aria-label="Set ${i+1} weight or BW" class="${cls}"><div class="set-label">S${i+1}${prev?`<br><span style="color:#555">${prev}kg</span>`:''}</div><div class="pb-badge">${isPB?'🏆':''}</div></div>`;
   }
 
   const savedRpe=parseInt(localStorage.getItem("rpe_"+slotPrefix)||3);
@@ -773,6 +809,38 @@ function renderExerciseCard(container, lib, slotPrefix, di, ei) {
     </div>`;
 
   container.appendChild(div);
+}
+
+function renderCardioFinisher(dayIndex) {
+  const activityKey=`cardio_${dayIndex}`;
+  const minutesKey=`cardio_minutes_${dayIndex}`;
+  const savedActivity=localStorage.getItem(activityKey);
+  const activity=CARDIO_FINISHERS[savedActivity]?savedActivity:"skipping";
+  const minutes=localStorage.getItem(minutesKey)||CARDIO_FINISHERS[activity].minutes;
+  const section=document.createElement("section");
+  section.className="cardio-finisher";
+  section.innerHTML=`
+    <h3>Cardio Finisher</h3>
+    <div class="cardio-controls">
+      <div class="cardio-field">
+        <label for="cardio-activity-${dayIndex}">Activity</label>
+        <select class="cardio-activity" id="cardio-activity-${dayIndex}" data-day="${dayIndex}">
+          ${Object.entries(CARDIO_FINISHERS).map(([id, option])=>`<option value="${id}"${id===activity?" selected":""}>${option.label}</option>`).join("")}
+        </select>
+      </div>
+      <div class="cardio-field">
+        <label for="cardio-minutes-${dayIndex}">Duration (min)</label>
+        <input class="cardio-minutes" id="cardio-minutes-${dayIndex}" data-day="${dayIndex}" type="number" min="1" max="120" step="1" value="${minutes}">
+      </div>
+      <div class="cardio-timer" data-day="${dayIndex}">
+        <span class="cardio-clock" role="timer" aria-label="Cardio time remaining">${formatTime(Number(minutes)*60)}</span>
+        <button type="button" class="cardio-go" data-day="${dayIndex}">Go</button>
+        <button type="button" class="cardio-reset" data-day="${dayIndex}" title="Reset timer" aria-label="Reset cardio timer">↻</button>
+        <span class="cardio-status" aria-live="polite">Ready</span>
+      </div>
+    </div>
+    <p class="cardio-note">Suggested durations aim for roughly 100–150 calories; actual burn varies with body size and effort.</p>`;
+  return section;
 }
 
 // ─── Swap Modal ────────────────────────────────────────────────────────────
@@ -882,6 +950,76 @@ function wireUp() {
       e.stopPropagation();
       openSwapModal(parseInt(btn.dataset.day), parseInt(btn.dataset.slot));
     });
+  });
+
+  document.querySelectorAll(".cardio-activity").forEach(select=>{
+    select.addEventListener("change",()=>{
+      const day=select.dataset.day;
+      const suggestion=CARDIO_FINISHERS[select.value];
+      const minutesInput=document.querySelector(`.cardio-minutes[data-day="${day}"]`);
+      localStorage.setItem(`cardio_${day}`, select.value);
+      minutesInput.value=suggestion.minutes;
+      minutesInput.dispatchEvent(new Event("change"));
+    });
+  });
+  document.querySelectorAll(".cardio-minutes").forEach(input=>{
+    input.addEventListener("change",()=>{
+      const minutes=Math.min(120, Math.max(1, parseInt(input.value, 10)||1));
+      input.value=minutes;
+      localStorage.setItem(`cardio_minutes_${input.dataset.day}`, minutes);
+    });
+  });
+  document.querySelectorAll(".cardio-timer").forEach(timer=>{
+    const day=timer.dataset.day;
+    const clock=timer.querySelector(".cardio-clock");
+    const status=timer.querySelector(".cardio-status");
+    const goBtn=timer.querySelector(".cardio-go");
+    const resetBtn=timer.querySelector(".cardio-reset");
+    const minutesInput=document.querySelector(`.cardio-minutes[data-day="${day}"]`);
+    let remainingSeconds=Math.max(1, parseInt(minutesInput.value, 10)||1)*60;
+    let endTime=0;
+    let interval=null;
+
+    function renderTime() {
+      clock.textContent=formatTime(remainingSeconds);
+    }
+    function resetTimer() {
+      clearInterval(interval);
+      interval=null;
+      endTime=0;
+      remainingSeconds=Math.max(1, parseInt(minutesInput.value, 10)||1)*60;
+      renderTime();
+      status.textContent="Ready";
+      goBtn.disabled=false;
+      goBtn.textContent="Go";
+    }
+    function tick() {
+      remainingSeconds=Math.max(0, Math.ceil((endTime-Date.now())/1000));
+      renderTime();
+      if(remainingSeconds===0) {
+        clearInterval(interval);
+        interval=null;
+        endTime=0;
+        status.textContent="Complete";
+        goBtn.disabled=false;
+        goBtn.textContent="Go";
+        playGoBeep();
+      }
+    }
+
+    minutesInput.addEventListener("change", resetTimer);
+    goBtn.addEventListener("click",()=>{
+      if(interval) return;
+      if(remainingSeconds===0) resetTimer();
+      getAudioCtx().resume();
+      endTime=Date.now()+remainingSeconds*1000;
+      status.textContent="In progress";
+      goBtn.disabled=true;
+      goBtn.textContent="In progress";
+      interval=setInterval(tick, 250);
+    });
+    resetBtn.addEventListener("click", resetTimer);
+    renderTime();
   });
 
   // Video toggles
@@ -1094,7 +1232,7 @@ function wireUp() {
     const btn=exEl.querySelector(".toggle-chart");
     const chartContainer=exEl.querySelector(".chart-container");
     const rawHistory = JSON.parse(localStorage.getItem("hist_"+slotId)||"[]");
-    const uniqueWeights = new Set(rawHistory.map(e => e.weight));
+    const uniqueWeights = new Set(rawHistory.map(e => e.weight).filter(Number.isFinite));
     if(uniqueWeights.size < 2){ btn.style.display = "none"; }
     btn.onclick=()=>{
       let canvas=chartContainer.querySelector("canvas");
@@ -1277,7 +1415,12 @@ function logSession(now=new Date()) {
     return { name: lib.name, sets, rpe };
   }).filter(Boolean);
 
-  const session = { date: today, time: timeStr, dayName, exercises };
+  const cardioActivity=localStorage.getItem(`cardio_${activeIdx}`)||"skipping";
+  const cardio={
+    activity:CARDIO_FINISHERS[cardioActivity]?cardioActivity:"skipping",
+    minutes:Math.max(1, parseInt(localStorage.getItem(`cardio_minutes_${activeIdx}`)||CARDIO_FINISHERS.skipping.minutes, 10)||CARDIO_FINISHERS.skipping.minutes),
+  };
+  const session = { date: today, time: timeStr, dayName, exercises, cardio };
 
   let sessions = getSessions();
   // Prevent duplicate log for same day + same dayName
@@ -1318,7 +1461,7 @@ function renderHistory() {
     const exRows = s.exercises.map(ex => {
       const rpeLabel = RPE_DESCS[ex.rpe] || "";
       const chips = ex.sets.map(v =>
-        v ? `<div class="session-set-chip">${v}kg</div>`
+        v ? `<div class="session-set-chip">${v === "BW" ? "BW" : `${v}kg`}</div>`
           : `<div class="session-set-chip empty">—</div>`
       ).join("");
       return `
@@ -1330,6 +1473,8 @@ function renderHistory() {
           <div class="session-sets-row">${chips}</div>
         </div>`;
     }).join("");
+      const cardioOption=CARDIO_FINISHERS[s.cardio?.activity];
+      const cardioRow=cardioOption?`<div class="session-ex"><div class="session-ex-name"><span>Cardio Finisher</span><span class="session-rpe">${cardioOption.label} · ${s.cardio.minutes} min</span></div></div>`:"";
 
     return `
       <div class="session-card" data-si="${si}">
@@ -1343,7 +1488,7 @@ function renderHistory() {
             <div class="session-toggle">▼</div>
           </div>
         </div>
-        <div class="session-body">${exRows}</div>
+        <div class="session-body">${exRows}${cardioRow}</div>
       </div>`;
   }).join("");
 
@@ -1406,7 +1551,7 @@ setTimeout(() => {
   if(splash) splash.classList.add("done");
 }, 2400);
 
-const APP_VERSION = 'v1.0.1';
+const APP_VERSION = 'v1.0.3';
 const _vEl = document.getElementById('appVersion'); if(_vEl) _vEl.textContent = APP_VERSION;
 
 buildTabs();
