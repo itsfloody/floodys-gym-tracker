@@ -101,8 +101,13 @@ h1 span { color:var(--red); }
 .sets input.is-pb      { border-color:var(--amber); background:var(--amber-dim); color:var(--amber); }
 .sets input.is-next    { animation:pulse-next 1.4s ease infinite; background:var(--red-dim); }
 .set-entry { display:flex; flex-direction:column; align-items:center; gap:3px; }
+.set-bw-button { width:64px; padding:3px 4px; background:#252525; border:1px solid #444; border-radius:5px; color:var(--muted); font-size:10px; font-weight:700; cursor:pointer; }
+.set-bw-button:hover { border-color:var(--green); color:var(--green); }
 .set-label { font-size:9px; color:var(--muted); text-align:center; line-height:1.4; }
 .pb-badge  { font-size:9px; color:var(--amber); font-weight:700; height:13px; }
+
+#weight-enter-button { display:none; position:fixed; right:16px; bottom:calc(12px + env(safe-area-inset-bottom)); z-index:1001; min-height:44px; padding:0 18px; border:1px solid var(--red); border-radius:24px; background:var(--red); color:#fff; font-weight:700; box-shadow:0 4px 16px rgba(0,0,0,0.4); cursor:pointer; }
+#weight-enter-button.visible { display:inline-flex; align-items:center; justify-content:center; }
 
 /* Timer ring */
 .timer { margin-top:10px; display:flex; align-items:center; gap:8px; border:1px solid #333; padding:8px; border-radius:6px; transition:border-color 0.3s; flex-wrap:wrap; }
@@ -358,6 +363,7 @@ h1 span { color:var(--red); }
 
 <div class="tabs" id="tabs"></div>
 <div id="app"></div>
+<button id="weight-enter-button" type="button" aria-label="Enter weight and close keypad">Enter</button>
 
 <!-- Exercise Swap Modal -->
 <div class="modal-backdrop" id="swapModal">
@@ -639,8 +645,9 @@ function drawChart(canvas, series) {
 }
 
 const timerStartBtns = {};
+let finishingWeightInput = null;
 
-function handleWeightChange(input) {
+function handleWeightChange(input, focusNext = true) {
   const raw  = input.value.trim();
   const val  = /^bw$/i.test(raw) ? "BW" : raw;
   const num  = val === "" ? NaN : Number(val);
@@ -669,8 +676,71 @@ function handleWeightChange(input) {
   updateNextSet(input.dataset.ex);
   const nextInput = [...document.querySelectorAll(`.sets input[data-ex="${input.dataset.ex}"]`)]
     .find(i => !i.value.trim());
-  if(nextInput) setTimeout(() => nextInput.focus(), 50);
+  if(focusNext && nextInput) setTimeout(() => nextInput.focus(), 50);
   timerStartBtns[input.dataset.ex]?.click();
+}
+
+function setupWeightEntryControls() {
+  const weightEnterButton=document.getElementById("weight-enter-button");
+  let focusedWeightInput=null;
+  const positionWeightEnterButton=()=>{
+    const viewport=window.visualViewport;
+    const keyboardOverlap=viewport ? Math.max(0, window.innerHeight-viewport.height-viewport.offsetTop) : 0;
+    weightEnterButton.style.bottom=`calc(${keyboardOverlap}px + 12px + env(safe-area-inset-bottom))`;
+  };
+
+  document.addEventListener("change", e=>{
+    const input=e.target;
+    if(input.matches(".sets input")) {
+      handleWeightChange(input, finishingWeightInput !== input);
+      if(finishingWeightInput === input) finishingWeightInput = null;
+    }
+  });
+  document.addEventListener("focusin", e=>{
+    if(e.target.matches(".sets input")) {
+      focusedWeightInput=e.target;
+      weightEnterButton.classList.add("visible");
+      positionWeightEnterButton();
+    }
+  });
+  document.addEventListener("focusout", e=>{
+    if(e.target.matches(".sets input")) {
+      setTimeout(()=>{
+        if(!document.activeElement.matches(".sets input")) {
+          focusedWeightInput=null;
+          weightEnterButton.classList.remove("visible");
+        }
+      },0);
+    }
+  });
+  document.addEventListener("pointerdown", e=>{
+    const target=e.target;
+    if(target.closest(".set-bw-button") || target.closest("#weight-enter-button")) e.preventDefault();
+  });
+  document.addEventListener("click", e=>{
+    const target=e.target;
+    const bwButton=target.closest(".set-bw-button");
+    if(bwButton) {
+      const input=bwButton.parentElement.querySelector("input");
+      input.value="BW";
+      handleWeightChange(input);
+      return;
+    }
+    if(target === weightEnterButton && focusedWeightInput) {
+      const input=focusedWeightInput;
+      finishingWeightInput=input;
+      input.blur();
+      if(finishingWeightInput === input) {
+        handleWeightChange(input, false);
+        finishingWeightInput=null;
+      }
+    }
+  });
+  if(window.visualViewport) {
+    window.visualViewport.addEventListener("resize", positionWeightEnterButton);
+    window.visualViewport.addEventListener("scroll", positionWeightEnterButton);
+  }
+  window.addEventListener("resize", positionWeightEnterButton);
 }
 
 // ─── Dynamic day subtitle ─────────────────────────────────────────────────
@@ -754,7 +824,7 @@ function renderExerciseCard(container, lib, slotPrefix, di, ei) {
     const val=/^bw$/i.test(savedVal)?"BW":(savedVal!==""&&Number.isFinite(Number(savedVal))?savedVal:"");
     const isPB=val&&prev&&val!=="BW"&&Number(val)>Number(prev);
     const cls=val?(isPB?'is-pb':'has-value'):'';
-    setsHTML+=`<div class="set-entry"><input type="text" inputmode="decimal" maxlength="12" data-key="${key}" data-ex="${slotPrefix}" data-prev="${prev}" value="${val}" placeholder="–" aria-label="Set ${i+1} weight or BW" class="${cls}"><div class="set-label">S${i+1}${prev?`<br><span style="color:#555">${prev}kg</span>`:''}</div><div class="pb-badge">${isPB?'🏆':''}</div></div>`;
+    setsHTML+=`<div class="set-entry"><input type="text" inputmode="decimal" maxlength="12" data-key="${key}" data-ex="${slotPrefix}" data-prev="${prev}" value="${val}" placeholder="–" aria-label="Set ${i+1} weight or BW" class="${cls}"><button type="button" class="set-bw-button" aria-label="Enter bodyweight for set ${i+1}">BW</button><div class="set-label">S${i+1}${prev?`<br><span style="color:#555">${prev}kg</span>`:''}</div><div class="pb-badge">${isPB?'🏆':''}</div></div>`;
   }
 
   const savedRpe=parseInt(localStorage.getItem("rpe_"+slotPrefix)||3);
@@ -1202,12 +1272,6 @@ function wireUp() {
     };
   });
 
-  // Weight input change
-  document.addEventListener("change", e=>{
-    const t=e.target;
-    if(t.matches(".sets input")) handleWeightChange(t);
-  });
-
   // Enter key — save + start timer + move focus
   document.addEventListener("keydown", e=>{
     if(e.key === "Enter" && e.target.matches(".sets input")) {
@@ -1551,9 +1615,10 @@ setTimeout(() => {
   if(splash) splash.classList.add("done");
 }, 2400);
 
-const APP_VERSION = 'v1.0.3';
+const APP_VERSION = 'v1.0.4';
 const _vEl = document.getElementById('appVersion'); if(_vEl) _vEl.textContent = APP_VERSION;
 
+setupWeightEntryControls();
 buildTabs();
 build();
 if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').catch(e=>console.warn('SW:',e)); }
