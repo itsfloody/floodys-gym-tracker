@@ -100,9 +100,13 @@ h1 span { color:var(--red); }
 .sets input.is-prefilled { border-color:#444; background:#1a1a1a; color:var(--muted); }
 .sets input.is-pb      { border-color:var(--amber); background:var(--amber-dim); color:var(--amber); }
 .sets input.is-next    { animation:pulse-next 1.4s ease infinite; background:var(--red-dim); }
-.set-entry { display:flex; flex-direction:column; align-items:center; gap:3px; }
+.set-entry { position:relative; display:flex; flex-direction:column; align-items:center; gap:3px; }
+.set-entry .bw-selected { visibility:hidden; }
+.set-bw-display { position:absolute; top:0; left:50%; transform:translateX(-50%); display:none; align-items:center; justify-content:center; width:76px; height:30px; box-sizing:border-box; border:2px solid #333; border-radius:6px; background:#252525; color:var(--green); font-weight:600; pointer-events:none; }
+.set-bw-display.visible { display:flex; }
 .set-bw-button { width:64px; padding:3px 4px; background:#252525; border:1px solid #444; border-radius:5px; color:var(--muted); font-size:10px; font-weight:700; cursor:pointer; }
 .set-bw-button:hover { border-color:var(--green); color:var(--green); }
+.set-bw-button[aria-pressed="true"] { border-color:var(--green); background:var(--green-dim); color:var(--green); }
 .set-label { font-size:9px; color:var(--muted); text-align:center; line-height:1.4; }
 .pb-badge  { font-size:9px; color:var(--amber); font-weight:700; height:13px; }
 
@@ -626,7 +630,7 @@ function getWeeklySeries(id) {
 function updateNextSet(exId) {
   const inputs=[...document.querySelectorAll(`.sets input[data-ex="${exId}"]`)];
   inputs.forEach(i=>i.classList.remove("is-next"));
-  const next=inputs.find(i=>!i.value.trim());
+  const next=inputs.find(i=>i.dataset.bodyweight !== "true" && !i.value.trim());
   if(next) next.classList.add("is-next");
 }
 
@@ -647,27 +651,40 @@ function drawChart(canvas, series) {
 const timerStartBtns = {};
 let finishingWeightInput = null;
 
+function setBodyweightState(input, selected) {
+  input.dataset.bodyweight=String(selected);
+  input.classList.toggle("bw-selected", selected);
+  const display=input.parentElement.querySelector(".set-bw-display");
+  if(display) display.classList.toggle("visible", selected);
+  const button=input.parentElement.querySelector(".set-bw-button");
+  if(button) {
+    button.setAttribute("aria-pressed", String(selected));
+    button.setAttribute("aria-label", `${selected ? "Use numeric weight" : "Enter bodyweight"} for set ${button.dataset.setNumber}`);
+  }
+}
+
 function handleWeightChange(input, focusNext = true) {
   const raw  = input.value.trim();
-  const val  = /^bw$/i.test(raw) ? "BW" : raw;
+  const val  = input.dataset.bodyweight === "true" || /^bw$/i.test(raw) ? "BW" : raw;
   const num  = val === "" ? NaN : Number(val);
   const isNumeric = Number.isFinite(num) && num >= 0;
   if(val && val !== "BW" && !isNumeric) {
     input.value = "";
-    return handleWeightChange(input);
+    return handleWeightChange(input, focusNext);
   }
-  input.value = val;
+  input.value = val === "BW" ? "" : val;
   const key  = input.dataset.key;
   const prev = parseFloat(input.dataset.prev) || 0;
   const pbEl = input.parentElement.querySelector(".pb-badge");
   localStorage.setItem(key, val);
+  setBodyweightState(input, val === "BW");
   if(isNumeric && (!prev || num > prev)) saveHistory(input.dataset.ex, val);
   input.classList.remove("is-next");
   if(isNumeric && prev > 0 && num > prev) {
     input.className = "is-pb";
     if(pbEl) pbEl.textContent = "🏆";
   } else if(val) {
-    input.className = "has-value";
+    input.className = val === "BW" ? "has-value bw-selected" : "has-value";
     if(pbEl) pbEl.textContent = "";
   } else {
     input.className = "";
@@ -675,7 +692,7 @@ function handleWeightChange(input, focusNext = true) {
   }
   updateNextSet(input.dataset.ex);
   const nextInput = [...document.querySelectorAll(`.sets input[data-ex="${input.dataset.ex}"]`)]
-    .find(i => !i.value.trim());
+    .find(i => i.dataset.bodyweight !== "true" && !i.value.trim());
   if(focusNext && nextInput) setTimeout(() => nextInput.focus(), 50);
   timerStartBtns[input.dataset.ex]?.click();
 }
@@ -722,8 +739,16 @@ function setupWeightEntryControls() {
     const bwButton=target.closest(".set-bw-button");
     if(bwButton) {
       const input=bwButton.parentElement.querySelector("input");
-      input.value="BW";
-      handleWeightChange(input);
+      const selected=input.dataset.bodyweight === "true";
+      input.value="";
+      setBodyweightState(input, !selected);
+      if(selected) {
+        handleWeightChange(input, false);
+        input.focus();
+      } else {
+        handleWeightChange(input);
+        if(document.activeElement === input) input.blur();
+      }
       return;
     }
     if(target === weightEnterButton && focusedWeightInput) {
@@ -824,7 +849,9 @@ function renderExerciseCard(container, lib, slotPrefix, di, ei) {
     const val=/^bw$/i.test(savedVal)?"BW":(savedVal!==""&&Number.isFinite(Number(savedVal))?savedVal:"");
     const isPB=val&&prev&&val!=="BW"&&Number(val)>Number(prev);
     const cls=val?(isPB?'is-pb':'has-value'):'';
-    setsHTML+=`<div class="set-entry"><input type="text" inputmode="decimal" maxlength="12" data-key="${key}" data-ex="${slotPrefix}" data-prev="${prev}" value="${val}" placeholder="–" aria-label="Set ${i+1} weight or BW" class="${cls}"><button type="button" class="set-bw-button" aria-label="Enter bodyweight for set ${i+1}">BW</button><div class="set-label">S${i+1}${prev?`<br><span style="color:#555">${prev}kg</span>`:''}</div><div class="pb-badge">${isPB?'🏆':''}</div></div>`;
+    const bwSelected=val==="BW";
+    const prevLabel=/^bw$/i.test(prev)?"BW":`${prev}kg`;
+    setsHTML+=`<div class="set-entry"><input type="number" min="0" data-key="${key}" data-ex="${slotPrefix}" data-prev="${prev}" data-bodyweight="${bwSelected}" value="${bwSelected?'':val}" placeholder="–" aria-label="Set ${i+1} weight" class="${cls}${bwSelected?' bw-selected':''}"><span class="set-bw-display${bwSelected?' visible':''}" aria-hidden="true">BW</span><button type="button" class="set-bw-button" data-set-number="${i+1}" aria-pressed="${bwSelected}" aria-label="${bwSelected?'Use numeric weight':'Enter bodyweight'} for set ${i+1}">BW</button><div class="set-label">S${i+1}${prev?`<br><span style="color:#555">${prevLabel}</span>`:''}</div><div class="pb-badge">${isPB?'🏆':''}</div></div>`;
   }
 
   const savedRpe=parseInt(localStorage.getItem("rpe_"+slotPrefix)||3);
@@ -1249,7 +1276,7 @@ function wireUp() {
     btn.onclick=()=>{
       const exId=btn.dataset.ex;
       document.querySelectorAll(`.sets input[data-ex="${exId}"]`).forEach(input=>{
-        const current=input.value.trim();
+        const current=input.dataset.bodyweight === "true" ? "BW" : input.value.trim();
         if(current) {
           localStorage.setItem("prev_"+input.dataset.key, current);
           input.dataset.prev = current;
@@ -1257,13 +1284,16 @@ function wireUp() {
         localStorage.removeItem(input.dataset.key);
         const prev = input.dataset.prev;
         if(prev) {
-          input.value = prev;
-          input.className = "is-prefilled";
+          const prevIsBodyweight=/^bw$/i.test(prev);
+          input.value = prevIsBodyweight ? "" : prev;
+          input.className = prevIsBodyweight ? "is-prefilled bw-selected" : "is-prefilled";
+          setBodyweightState(input, prevIsBodyweight);
         } else {
           input.value = ""; input.className = "";
+          setBodyweightState(input, false);
         }
         const label=input.parentElement.querySelector(".set-label");
-        if(label&&current){ const span=label.querySelector("span"); if(span) span.textContent=`${current}kg`; else label.innerHTML+=`<br><span style="color:#555">${current}kg</span>`; }
+        if(label&&current){ const labelValue=current==="BW"?current:`${current}kg`; const span=label.querySelector("span"); if(span) span.textContent=labelValue; else label.innerHTML+=`<br><span style="color:#555">${labelValue}</span>`; }
         const pb=input.parentElement.querySelector(".pb-badge"); if(pb) pb.textContent="";
       });
       const first = document.querySelector(`.sets input[data-ex="${exId}"]`);
@@ -1615,7 +1645,7 @@ setTimeout(() => {
   if(splash) splash.classList.add("done");
 }, 2400);
 
-const APP_VERSION = 'v1.0.4';
+const APP_VERSION = 'v1.0.5';
 const _vEl = document.getElementById('appVersion'); if(_vEl) _vEl.textContent = APP_VERSION;
 
 setupWeightEntryControls();

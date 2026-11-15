@@ -1,4 +1,4 @@
-const CACHE = 'gym-tracker-v1.0.4';
+const CACHE = 'gym-tracker-v1.0.5';
 
 // App shell - everything needed to run offline
 const SHELL = [
